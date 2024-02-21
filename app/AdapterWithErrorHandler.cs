@@ -23,7 +23,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
 
                 // Send a message to the user
                 await turnContext.SendActivityAsync("The bot encountered an error or bug.");
-                await turnContext.SendActivityAsync("To continue to run this bot, please fix the bot source code.");
+                await turnContext.SendActivityAsync("To continue to run this bot, please fix the bot source code. test");
 
                 // Send a trace activity, which will be displayed in the Bot Framework Emulator
                 await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
