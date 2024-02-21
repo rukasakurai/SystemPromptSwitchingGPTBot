@@ -112,6 +112,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
 
+            Console.WriteLine("In public async OnTurnAsync");
+
             // State保存
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
             await _userState.SaveChangesAsync(turnContext, false, cancellationToken);
