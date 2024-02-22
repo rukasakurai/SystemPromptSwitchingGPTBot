@@ -12,6 +12,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using _07JP27.SystemPromptSwitchingGPTBot.SystemPrompt;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 {
@@ -23,13 +24,16 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
         private BotState _userState;
         private List<IGptConfiguration> _systemPrompts;
 
-        public GPTBot(IConfiguration configuration, OpenAIClient openAIClient, ConversationState conversationState, UserState userState, List<IGptConfiguration> systemPrompts)
+        private readonly ILogger<GPTBot> _logger;
+
+        public GPTBot(IConfiguration configuration, OpenAIClient openAIClient, ConversationState conversationState, UserState userState, List<IGptConfiguration> systemPrompts, ILogger<GPTBot> logger)
         {
             _configuration = configuration;
             _openAIClient = openAIClient;
             _conversationState = conversationState;
             _userState = userState;
             _systemPrompts = systemPrompts;
+            _logger = logger;
         }
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
@@ -41,6 +45,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             string inputText = turnContext.Activity.Text;
 
             System.Diagnostics.Trace.TraceError("TraceError1");
+            _logger.LogError("Error1");
 
             if(inputText.StartsWith("/"))
             {
