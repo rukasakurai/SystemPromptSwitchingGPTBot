@@ -9,12 +9,21 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
-param resourceGroupName string = ''
+param resourceGroupName string
 
-var abbrs = loadJsonContent('abbreviations.json')
+var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
 // Organize resources in a resource group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
+  name: 'rg-${environmentName}'
   location: location
+}
+
+module openAi 'therest.bicep' = {
+  name: 'openai'
+  scope: resourceGroup
+  params: {
+    name: 'oai-${resourceToken}'
+    location: location
+  }
 }
