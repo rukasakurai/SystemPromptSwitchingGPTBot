@@ -79,7 +79,6 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                Console.WriteLine("Development mode");
             }
 
             app.UseDefaultFiles()

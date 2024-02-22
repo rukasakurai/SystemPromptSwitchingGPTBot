@@ -44,8 +44,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             string inputText = turnContext.Activity.Text;
 
-            System.Diagnostics.Trace.TraceError("TraceError1");
-            _logger.LogError("Error1");
+            _logger.LogTrace("inputText: {inputText}", inputText);
 
             if(inputText.StartsWith("/"))
             {
@@ -118,9 +117,6 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
          public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
-
-            Console.WriteLine("In public async OnTurnAsync");
-            System.Diagnostics.Trace.TraceError("TraceError2");
 
             // State保存
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
