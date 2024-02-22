@@ -40,8 +40,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             string inputText = turnContext.Activity.Text;
 
-            System.Diagnostics.Trace.WriteLine($"===OnMessageActivityAsync==== inputText: {inputText}");
-            
+            System.Diagnostics.Trace.TraceError("TraceError1");
+
             if(inputText.StartsWith("/"))
             {
                 string command = inputText.Trim().ToLowerInvariant().Substring(1);
@@ -115,6 +115,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             await base.OnTurnAsync(turnContext, cancellationToken);
 
             Console.WriteLine("In public async OnTurnAsync");
+            System.Diagnostics.Trace.TraceError("TraceError2");
 
             // State保存
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);

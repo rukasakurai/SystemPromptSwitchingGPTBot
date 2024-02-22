@@ -76,16 +76,6 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var openAIDeployment = Configuration.GetSection("OpenAIDeployment").Value;
-            System.Diagnostics.Trace.WriteLine($"OpenAIDeployment: {openAIDeployment}");
-
-            var microsoftAppType = Configuration.GetSection("MicrosoftAppType").Value;
-            System.Diagnostics.Trace.WriteLine($"MicrosoftAppType: {microsoftAppType}");
-            
-            var microsoftAppId = Configuration.GetSection("MicrosoftAppId").Value;
-            System.Diagnostics.Trace.WriteLine($"MicrosoftAppId: {microsoftAppId}");
-
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
