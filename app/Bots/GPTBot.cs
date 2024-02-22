@@ -48,6 +48,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             _logger.LogInformation("inputText: {inputText}", inputText);
             _logger.LogWarning("LogWarning");
             _logger.LogError("LogError");
+            _logger.LogInformation("StackTrace: '{0}'", Environment.StackTrace);
 
             if(inputText.StartsWith("/"))
             {
