@@ -153,7 +153,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 }
             }
 
-            var chatCompletionsOptions = new ChatCompletionsOptions(_configuration["OpenAIDeployment"],requestMessages);
+            var chatCompletionsOptions = new ChatCompletionsOptions("gpt-35-turbo",requestMessages);
+            //var chatCompletionsOptions = new ChatCompletionsOptions(_configuration["OpenAIDeployment"],requestMessages);
             chatCompletionsOptions.Temperature = temperature;
             chatCompletionsOptions.MaxTokens = maxTokens;
             Response<ChatCompletions> response = await _openAIClient.GetChatCompletionsAsync(chatCompletionsOptions);
