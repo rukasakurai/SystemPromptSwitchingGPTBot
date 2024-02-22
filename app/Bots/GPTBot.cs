@@ -44,7 +44,10 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             string inputText = turnContext.Activity.Text;
 
-            _logger.LogTrace("inputText: {inputText}", inputText);
+            _logger.LogTrace("LogTrace");
+            _logger.LogInformation("inputText: {inputText}", inputText);
+            _logger.LogWarning("LogWarning");
+            _logger.LogError("LogError");
 
             if(inputText.StartsWith("/"))
             {
