@@ -39,6 +39,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             var userProfile = await userStateAccessors.GetAsync(turnContext, () => new UserProfile());
 
             string inputText = turnContext.Activity.Text;
+
+            System.Diagnostics.Trace.WriteLine($"===OnMessageActivityAsync==== inputText: {inputText}");
             
             if(inputText.StartsWith("/"))
             {
