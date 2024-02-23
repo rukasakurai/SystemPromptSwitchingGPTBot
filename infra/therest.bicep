@@ -66,10 +66,11 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
 }
 
 // Role Assignment for Managed Identity to access Azure OpenAI (WIP)
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: 'role-${resourceToken}'
-  properties: {
+module openAiRoleUser 'role.bicep' = {
+  name: 'openai-role-user'
+  params: {
     principalId: webApp.identity.principalId
     roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    principalType: 'ServicePrincipal'
   }
 }
