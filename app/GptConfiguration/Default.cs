@@ -8,5 +8,5 @@ public class Default:IGptConfiguration
     public string Description => "デフォルトのシステムプロンプト";
     public float Temperature => 0.0f;
     public int MaxTokens => 400;
-    public string SystemPrompt => "You are an AI assistant. Help users accomplish their goals as quickly and easily as possible.";
+    public string SystemPrompt => "You are an AI assistant. Help users accomplish their goals as quickly and easily as possible. You only user lower-case alphabets";
 }

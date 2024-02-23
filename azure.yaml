@@ -1,1 +1,6 @@
 name: SystemPromptSwitchingGPTBot
+services:
+  backend:
+    project: ./app
+    language: dotnet
+    host: appservice

@@ -43,6 +43,10 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   }
   properties: {
     serverFarmId: appServicePlan.id
+    siteConfig: {
+      netFrameworkVersion: 'v8.0'
+      windowsFxVersion: 'dotnet:8'
+    }
   }
 }
 
@@ -70,7 +74,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08
 
 // Application Insights (WIP)
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: 'ai-${resourceToken}'
+  name: 'appi-${resourceToken}'
   location: location
   kind: 'web'
   properties: {
@@ -93,7 +97,7 @@ module openAiRoleUser 'role.bicep' = {
   name: 'openai-role-user'
   params: {
     principalId: webApp.identity.principalId
-    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' // Cognitive Services OpenAI User
     principalType: 'ServicePrincipal'
   }
 }
