@@ -9,8 +9,6 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
-param resourceGroupName string
-
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
 // Organize resources in a resource group
@@ -23,7 +21,7 @@ module openAi 'therest.bicep' = {
   name: 'openai'
   scope: resourceGroup
   params: {
-    name: 'oai-${resourceToken}'
+    resourceToken: resourceToken
     location: location
   }
 }
