@@ -38,6 +38,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   name: 'web-${resourceToken}'
   location: location
+  tags: { 'azd-service-name': 'backend' }
   identity: {
     type: 'SystemAssigned'
   }
