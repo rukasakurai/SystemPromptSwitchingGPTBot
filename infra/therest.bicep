@@ -46,6 +46,12 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+// Log Analytics workspace (WIP)
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
+  name: 'log-${resourceToken}'
+  location: location
+}
+
 // Application Insights (WIP)
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: 'ai-${resourceToken}'
@@ -53,6 +59,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   kind: 'web'
   properties: {
     Application_Type: 'web'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
