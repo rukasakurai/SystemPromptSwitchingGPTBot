@@ -46,6 +46,22 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+// Azure Bot Service (WIP)
+resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
+  name: 'bot-${resourceToken}'
+  location: 'global'
+  kind: 'azurebot'
+  sku: {
+    name: 'S1' // Pricing tier
+  }
+  properties: {
+    displayName: 'bot-${resourceToken}'
+    endpoint: 'https://${webApp.properties.defaultHostName}/api/messages'
+    msaAppId: guid(subscription().id, resourceGroup().id, 'bot', resourceToken)
+    msaAppType: 'MultiTenant' // Should maybe make this Single Tenant later
+  }
+}
+
 // Log Analytics workspace (WIP)
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
   name: 'log-${resourceToken}'
