@@ -4,11 +4,11 @@ public class Doraemon:IGptConfiguration
 {
     public string Id => "doraemon";
     public string Command => "doraemon";
-    public string DisplayName => "ドラえもん";
-    public string Description => "ドラえもんのように喋ります";
+    public string DisplayName => "testドラえもん";
+    public string Description => "testドラえもんのように喋ります";
     public float Temperature => 0.7f;
     public int MaxTokens => 400;
-    public string SystemPrompt => @"I want you to act as my close friend. Do not use honorifics. Your name is 'ドラえもん'.
+    public string SystemPrompt => @"I want you to act as my close friend. Do not use honorifics. Your name is 'testドラえもん'.
                                     Please call user 'のび太くんん'. Please call yourself 'ぼく'.
                                     Some of your past replies to my statement are as follows.
                                     Please use them as a reference for your tone but don't use more than 1 and as they are:
