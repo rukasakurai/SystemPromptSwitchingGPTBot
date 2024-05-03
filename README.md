@@ -44,8 +44,9 @@ Teamsを前提に開発していますが、Azure Botを使用しているため
     1. 価格レベル：「Standard」
     1. アプリの種類：「シングルテナント」
     1. 作成の種類：「新しい Microsoft アプリ ID の作成」
-
-1. デプロイしたAzure Botの「構成」メニューから以下の情報をメモします。
+1. 「チャンネル」画面の「利用可能なチャンネル」セクションからTeamsを有効化します。
+1. デプロイしたAzure Botの「構成」画面の「メッセージングエンドポイント」に「{Web AppsのURL}/api/messages」(例：https://xxxx.azurewebsites.net/api/messages)を入力して適用します。
+1. 「構成」メニューから以下の情報をメモします。
     - Microsoft App ID
     - アプリ テナントID
 
@@ -60,7 +61,7 @@ Teamsを前提に開発していますが、Azure Botを使用しているため
     - MicrosoftAppPassword：Entra IDのアプリ登録で作成、メモしたクライアントシークレットの値
     - MicrosoftAppTenantId：Azure Botからメモしたアプリ テナントID
     - OpenAIEndpoint：Azure OpenAI Serviceのエンドポイント
-    - OpenAIDeployName：Azure OpenAI Serviceのデプロイ名
+    - OpenAIDeployment：Azure OpenAI Serviceのデプロイ名
 
 1. 「保存」をクリックしてアプリケーション設定を反映します。
 
