@@ -79,3 +79,6 @@ Teamsを前提に開発していますが、Azure Botを使用しているため
 #### Teamsへのインポート
 - サイドローディングがサポートされている環境では[アプリをアップロード](https://learn.microsoft.com/ja-jp/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)して個人用のアプリをインストールすることができます。
 - 組織全体に配布する場合はTeamsの管理者である必要があります。「Teams管理センター」へアクセスして「Teamsアプリ」→「アプリの管理」から「新しいアプリのアップロード」を選択して圧縮したmanifestファイルをアップロードします。
+
+### Sequence Diagram
+For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
