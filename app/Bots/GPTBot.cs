@@ -108,7 +108,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
             // TODO:APIのレスポンスがエラーの場合の処理を追加する
-            var replyText = "2025-04-16 test: " + response.Choices[0].Message.Content;
+            var replyText = response.Choices[0].Message.Content;
             await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
 
             messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
