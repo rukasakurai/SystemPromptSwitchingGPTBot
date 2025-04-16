@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "manifest/**"
+      - ".github/workflows/teams-app-ci.yml"
   workflow_dispatch:
 
 jobs:
