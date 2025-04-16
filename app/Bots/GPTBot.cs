@@ -50,7 +50,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             _logger.LogError("LogError");
             _logger.LogInformation("StackTrace: '{0}'", Environment.StackTrace);
 
-            if(inputText.StartsWith("/"))
+            if (inputText.StartsWith("/"))
             {
                 string command = inputText.Trim().ToLowerInvariant().Substring(1);
 
@@ -59,19 +59,19 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                     var resetMessage = "会話履歴をクリアしました。";
                     await turnContext.SendActivityAsync(MessageFactory.Text(resetMessage, resetMessage), cancellationToken);
                     var currentMode = _systemPrompts.FirstOrDefault(x => x.Id == conversationData.CurrentConfigId);
-                    conversationData.Messages = new (){new GptMessage(){Role = "system", Content = currentMode.SystemPrompt}};
+                    conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentMode.SystemPrompt } };
                     return;
                 }
 
                 var systemPrompt = _systemPrompts.FirstOrDefault(x => x.Command == command);
 
-                if(systemPrompt != null)
+                if (systemPrompt != null)
                 {
                     // systemPromptのSystemPromptを返す
                     var switchedMessage = $"会話履歴をクリアして、**{systemPrompt.DisplayName}**モードに設定しました。\n\nこのモードでできること：{systemPrompt.Description}";
                     await turnContext.SendActivityAsync(MessageFactory.Text(switchedMessage, switchedMessage), cancellationToken);
                     conversationData.CurrentConfigId = systemPrompt.Id;
-                    conversationData.Messages = new (){new GptMessage(){Role = "system", Content = systemPrompt.SystemPrompt}};
+                    conversationData.Messages = new() { new GptMessage() { Role = "system", Content = systemPrompt.SystemPrompt } };
                     return;
                 }
                 else
@@ -82,8 +82,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                     return;
                 }
             }
-        
-            if(string.IsNullOrEmpty(userProfile.Name))
+
+            if (string.IsNullOrEmpty(userProfile.Name))
             {
                 string userNameFronContext = turnContext.Activity.From.Name;
                 userProfile.Name = userNameFronContext;
@@ -93,7 +93,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             if (String.IsNullOrEmpty(conversationData.CurrentConfigId))
             {
-                conversationData.Messages = new (){new GptMessage(){Role = "system", Content = currentConfing.SystemPrompt}};
+                conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfing.SystemPrompt } };
             }
 
             List<GptMessage> messages = new();
@@ -102,23 +102,23 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 messages = conversationData.Messages;
             }
 
-            messages.Add(new GptMessage(){Role = "user", Content = inputText});
+            messages.Add(new GptMessage() { Role = "user", Content = inputText });
 
             // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
             ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
             // TODO:APIのレスポンスがエラーの場合の処理を追加する
-            var replyText =response.Choices[0].Message.Content;
+            var replyText = "2025-04-16 test: " + response.Choices[0].Message.Content;
             await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
 
-            messages.Add(new GptMessage(){Role = "assistant", Content = replyText});
+            messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
 
             conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
             conversationData.ChannelId = turnContext.Activity.ChannelId;
             conversationData.Messages = messages;
         }
 
-         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+        public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
 
@@ -139,12 +139,12 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             }
         }
 
-        private async Task<ChatCompletions> generateMessage(List<GptMessage> messages, float temperature = 0.0f, int maxTokens = 500 )
+        private async Task<ChatCompletions> generateMessage(List<GptMessage> messages, float temperature = 0.0f, int maxTokens = 500)
         {
             var requestMessages = new List<ChatRequestMessage>();
-            foreach(var message in messages)
+            foreach (var message in messages)
             {
-                switch(message.Role)
+                switch (message.Role)
                 {
                     case "user":
                         requestMessages.Add(new ChatRequestUserMessage(message.Content));
@@ -158,7 +158,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 }
             }
 
-            var chatCompletionsOptions = new ChatCompletionsOptions(_configuration["OpenAIDeployment"],requestMessages);
+            var chatCompletionsOptions = new ChatCompletionsOptions(_configuration["OpenAIDeployment"], requestMessages);
             chatCompletionsOptions.Temperature = temperature;
             chatCompletionsOptions.MaxTokens = maxTokens;
             Response<ChatCompletions> response = await _openAIClient.GetChatCompletionsAsync(chatCompletionsOptions);
