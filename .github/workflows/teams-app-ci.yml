@@ -1,0 +1,30 @@
+# Workflow to package, validate, and upload Teams app when manifest changes
+name: Teams App CI
+
+on:
+  push:
+    paths:
+      - "manifest/**"
+      - ".github/workflows/teams-app-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  teams-app-package-validate-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Upload manifest files as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: teams-app-package
+          path: |
+            manifest/manifest.json
+            manifest/color.png
+            manifest/outline.png
