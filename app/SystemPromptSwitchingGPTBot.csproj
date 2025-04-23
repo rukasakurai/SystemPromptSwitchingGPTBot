@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <UserSecretsId>8b3f09c8-1496-4e37-9cf0-363e166a069b</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == '.NET Core' " />
@@ -14,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="appsettings.json">
+    <Content Update="appsettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
