@@ -16,14 +16,17 @@ sequenceDiagram
 
     %% Service-to-service authentication for securing API endpoints
     Note over Bot,Entra: Service-to-service authentication<br/>to secure bot endpoints
-    Bot->>Entra: Request access token with<br/>MicrosoftAppId & MicrosoftAppPassword (HTTPS)
-    Entra-->>Bot: Return service access token for Bot Service communication (HTTPS)
+    Bot->>Entra: Request access token with<br/>MicrosoftAppId & MicrosoftAppPassword (HTTPS POST)
+    Entra-->>Bot: HTTP 200 OK: Return service access token (HTTPS)
     Note over BotService,Bot: Bot endpoint (/api/messages) is secured<br/>and only accepts requests with valid tokens
 
     %% Initial message flow
-    User->>TeamsService: Send message (HTTPS)
-    TeamsService->>BotService: Forward message with Teams auth context (HTTPS)
+    User->>TeamsService: Send message (HTTPS POST)
+    TeamsService-->>User: HTTP 200 OK (HTTPS)
+    TeamsService->>BotService: Forward message with Teams auth context (HTTPS POST)
+    BotService-->>TeamsService: HTTP 202 Accepted (HTTPS)
     BotService->>Bot: Deliver activity with auth header<br/>(HTTPS POST to /api/messages endpoint)
+    Bot-->>BotService: HTTP 200 OK (HTTPS)
 
     %% Bot validates incoming requests
     Bot->>Bot: Validate request is from legitimate Bot Service<br/>using Bot Framework Authentication
@@ -33,12 +36,19 @@ sequenceDiagram
 
     %% Azure OpenAI interaction
     Note over Bot,OpenAI: Bot uses DefaultAzureCredential<br/>for Azure OpenAI authentication
-    Bot->>OpenAI: Send chat completion request with system prompt (HTTPS)
-    OpenAI-->>Bot: Return generated response (HTTPS)
+    Bot->>OpenAI: Send chat completion request with system prompt (HTTPS POST)
+    OpenAI-->>Bot: HTTP 200 OK: Return generated response (HTTPS)
 
-    Bot->>BotService: Send response message with bot's service token (HTTPS)
-    BotService->>TeamsService: Forward response (HTTPS)
+    Bot->>BotService: Send response message with bot's service token (HTTPS POST)
+    BotService-->>Bot: HTTP 200 OK (HTTPS)
+    BotService->>TeamsService: Forward response (HTTPS POST)
+    TeamsService-->>BotService: HTTP 200 OK (HTTPS)
     TeamsService->>User: Display bot's response (HTTPS/WebSocket)
+
+    %% If using HTTPS for response display
+    Note over TeamsService,User: If using HTTPS for response display:
+    User->>TeamsService: Poll for updates (HTTPS GET)
+    TeamsService-->>User: HTTP 200 OK: Return updates (HTTPS)
 ```
 
 ## Communication Protocols
