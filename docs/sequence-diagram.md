@@ -5,7 +5,7 @@ This sequence diagram represents a typical user scenario of using the app with t
 ```mermaid
 sequenceDiagram
     participant User as Teams Client
-    participant TeamsService as Teams Service
+    participant TeamsService as Microsoft Teams platform
     participant BotService as Azure Bot Service
     participant Bot as Bot App (App Service)
     participant Entra as Microsoft Entra ID
@@ -53,14 +53,14 @@ sequenceDiagram
 
 ## Participants
 
-| Participant           | Description                                                                                                              | Documentation                                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Teams Client          | The Microsoft Teams client application used by end users to interact with the bot.                                       | [Microsoft Teams client overview](https://learn.microsoft.com/en-us/microsoftteams/teams-client-experience) |
-| Teams Service         | The backend service that powers Microsoft Teams, handling message routing and delivery.                                  | [Microsoft Teams architecture](https://learn.microsoft.com/en-us/microsoftteams/teams-architecture)         |
-| Azure Bot Service     | Microsoft's managed service for bot deployment and connectivity to messaging channels including Teams.                   | [Azure Bot Service documentation](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-overview) |
-| Bot App (App Service) | The custom bot application deployed to Azure App Service hosting the bot's logic and handling chat interactions.         | [Azure App Service documentation](https://learn.microsoft.com/en-us/azure/app-service/)                     |
-| Microsoft Entra ID    | Microsoft's cloud identity service, formerly known as Azure Active Directory, used for authentication and authorization. | [Microsoft Entra ID documentation](https://learn.microsoft.com/en-us/entra/fundamentals/whatis)             |
-| Azure OpenAI Service  | Microsoft's cloud-based service providing API access to OpenAI's GPT models, used for generating responses.              | [Azure OpenAI Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)           |
+| Participant              | Description                                                                                                              | Documentation                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Teams Client             | The Microsoft Teams client application used by end users to interact with the bot.                                       | [Microsoft Teams client overview](https://learn.microsoft.com/en-us/microsoftteams/get-clients)             |
+| Microsoft Teams platform | The backend platform that powers Microsoft Teams, handling message routing and delivery between clients and services.    | [Microsoft Teams platform overview](https://learn.microsoft.com/en-us/microsoftteams/platform/overview)     |
+| Azure Bot Service        | Microsoft's managed service for bot deployment and connectivity to messaging channels including Teams.                   | [Azure Bot Service documentation](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-overview) |
+| Bot App (App Service)    | The custom bot application deployed to Azure App Service hosting the bot's logic and handling chat interactions.         | [Azure App Service documentation](https://learn.microsoft.com/en-us/azure/app-service/overview)             |
+| Microsoft Entra ID       | Microsoft's cloud identity service, formerly known as Azure Active Directory, used for authentication and authorization. | [Microsoft Entra ID documentation](https://learn.microsoft.com/en-us/entra/identity/fundamentals/whatis-id) |
+| Azure OpenAI Service     | Microsoft's cloud-based service providing API access to OpenAI's GPT models, used for generating responses.              | [Azure OpenAI Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)   |
 
 ## Communication Protocols
 
@@ -78,7 +78,7 @@ sequenceDiagram
 ## Endpoints
 
 - Teams Client: N/A
-- Teams Service: N/A
+- Microsoft Teams platform: N/A
 - Azure Bot Service: N/A
 - Bot App (App Service): `https://<your-app-service-name>.azurewebsites.net/api/messages` (secured endpoint)
 - Microsoft Entra ID: `https://login.microsoftonline.com/<tenant-id>`
