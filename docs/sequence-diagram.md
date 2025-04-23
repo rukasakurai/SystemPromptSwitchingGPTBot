@@ -1,29 +1,57 @@
 # Sequence Diagram
 
-This sequence diagram represents a typical user scenario of using the app with the specified entities.
+This sequence diagram represents a typical user scenario of using the app with the specified entities, including authentication flow.
 
 ```mermaid
 sequenceDiagram
-    participant User as Microsoft Teams (client-side client)
-    participant TeamsServer as Microsoft Teams (server-side)
+    participant User as Teams Client
+    participant TeamsService as Teams Service
     participant BotService as Azure Bot Service
-    participant AppService as Azure App Service
-    participant Entra as Microsoft Entra (for authentication)
+    participant Bot as Bot App (App Service)
+    participant MSAL as Bot's MSAL Client
+    participant Entra as Microsoft Entra ID
 
-    User->>TeamsServer: Send message (HTTP)
-    TeamsServer->>BotService: Forward message (HTTP)
-    BotService->>Entra: Authenticate user (HTTP)
-    Entra-->>BotService: Authentication result (HTTP)
-    BotService->>AppService: Forward message (HTTP)
-    AppService->>BotService: Process message (HTTP)
-    BotService->>TeamsServer: Send response (HTTP)
-    TeamsServer->>User: Deliver response (HTTP)
+    %% Initial message flow
+    User->>TeamsService: Send message
+    TeamsService->>BotService: Forward message (HTTP POST)
+    BotService->>Bot: Deliver activity (HTTP POST to bot endpoint)
+
+    alt User not authenticated
+        %% Authentication flow with OAuthCard
+        Bot->>Bot: Check if user has valid token
+        Bot->>TeamsService: Send OAuthCard with sign-in button
+        TeamsService->>User: Display sign-in card
+        User->>TeamsService: Click "Sign in"
+        TeamsService->>Entra: Start OAuth flow (browser popup)
+        User->>Entra: Authenticate and consent
+        Entra-->>TeamsService: Return auth code
+        TeamsService->>BotService: Send TokenResponse activity
+        BotService->>Bot: Deliver TokenResponse
+        Bot->>MSAL: Exchange code for tokens
+        MSAL->>Entra: Request tokens with auth code
+        Entra-->>MSAL: Return access & refresh tokens
+        MSAL->>Bot: Return tokens
+        Bot->>Bot: Store token in bot state
+    end
+
+    %% Main message processing flow
+    Bot->>Bot: Process message with auth context
+    Bot->>TeamsService: Send response message
+    TeamsService->>User: Display bot's response
+
+    %% Token refresh (optional)
+    opt When token expires
+        Bot->>MSAL: Request token refresh
+        MSAL->>Entra: Refresh token request
+        Entra-->>MSAL: New access token
+        MSAL-->>Bot: Updated token
+    end
 ```
 
 ## Endpoints
 
-- Microsoft Teams (client-side client): N/A
-- Microsoft Teams (server-side): N/A
+- Teams Client: N/A
+- Teams Service: N/A
 - Azure Bot Service: N/A
-- Azure App Service: `https://<your-app-service-name>.azurewebsites.net/api/messages`
-- Microsoft Entra (for authentication): N/A
+- Bot App (App Service): `https://<your-app-service-name>.azurewebsites.net/api/messages`
+- Microsoft Entra ID: `https://login.microsoftonline.com/<tenant-id>`
