@@ -66,14 +66,6 @@ sequenceDiagram
 | [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/fundamentals/whatis-id)  | Microsoft's cloud identity service, formerly known as Azure Active Directory, used for authentication and authorization. | [Free tier with premium features available](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing)               |
 | [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)    | Microsoft's cloud-based service providing API access to OpenAI's GPT models, used for generating responses.              | [Pay-per-use model based on tokens and models](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/) |
 
-## Authentication Notes
-
-- **Teams Authentication**: The user authenticates to Teams independently before any bot interaction occurs
-- **Bot Service Authentication**: Azure Bot Service signs requests with its own credentials (doesn't use bot's client secret)
-- **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
-- **Bot Service Authentication**: The bot endpoint is secured using the app registration (Application Client ID & Client Secret from Entra App Registration)
-- **Azure OpenAI Authentication**: The bot uses DefaultAzureCredential (managed identity) to authenticate with Azure OpenAI Service
-
 ## Endpoints
 
 | Participant              | Endpoint URL                                                             | Access Control (Auth)                                                                                                                    | Access Control (Network)                                                                                                                                            |
@@ -84,3 +76,11 @@ sequenceDiagram
 | Bot App (App Service)    | `https://<your-app-service-name>.azurewebsites.net/api/messages`         | [Bot Authentication](https://learn.microsoft.com/en-us/azure/bot-service/bot-builder-concept-authentication-types#bot-authentication)    | [Can be restricted with App Service networking features](https://learn.microsoft.com/en-us/azure/app-service/networking-features)                                   |
 | Microsoft Entra ID       | `https://login.microsoftonline.com/<tenant-id>`                          | [OAuth 2.0 / OpenID Connect](https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc)                                | Public endpoint                                                                                                                                                     |
 | Azure OpenAI Service     | `https://<your-openai-resource-name>.openai.azure.com/`                  | [Azure AD / DefaultAzureCredential](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#authentication)                 | [Can be restricted with Private Endpoints / VNet integration](https://learn.microsoft.com/en-us/azure/ai-services/cognitive-services-virtual-networks)              |
+
+## Authentication Notes
+
+- **Teams Authentication**: The user authenticates to Teams independently before any bot interaction occurs
+- **Bot Service Authentication**: Azure Bot Service signs requests with its own credentials (doesn't use bot's client secret)
+- **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
+- **Bot Service Authentication**: The bot endpoint is secured using the app registration (Application Client ID & Client Secret from Entra App Registration)
+- **Azure OpenAI Authentication**: The bot uses DefaultAzureCredential (managed identity) to authenticate with Azure OpenAI Service
