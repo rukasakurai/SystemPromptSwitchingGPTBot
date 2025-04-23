@@ -51,6 +51,17 @@ sequenceDiagram
     TeamsService-->>User: HTTP 200 OK: Return updates (HTTPS)
 ```
 
+## Participants
+
+| Participant           | Description                                                                                                              | Documentation                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Teams Client          | The Microsoft Teams client application used by end users to interact with the bot.                                       | [Microsoft Teams client overview](https://learn.microsoft.com/en-us/microsoftteams/teams-client-experience) |
+| Teams Service         | The backend service that powers Microsoft Teams, handling message routing and delivery.                                  | [Microsoft Teams architecture](https://learn.microsoft.com/en-us/microsoftteams/teams-architecture)         |
+| Azure Bot Service     | Microsoft's managed service for bot deployment and connectivity to messaging channels including Teams.                   | [Azure Bot Service documentation](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-overview) |
+| Bot App (App Service) | The custom bot application deployed to Azure App Service hosting the bot's logic and handling chat interactions.         | [Azure App Service documentation](https://learn.microsoft.com/en-us/azure/app-service/)                     |
+| Microsoft Entra ID    | Microsoft's cloud identity service, formerly known as Azure Active Directory, used for authentication and authorization. | [Microsoft Entra ID documentation](https://learn.microsoft.com/en-us/entra/fundamentals/whatis)             |
+| Azure OpenAI Service  | Microsoft's cloud-based service providing API access to OpenAI's GPT models, used for generating responses.              | [Azure OpenAI Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)           |
+
 ## Communication Protocols
 
 - **HTTPS**: Used for all secure API communication between services
