@@ -38,8 +38,8 @@ sequenceDiagram
     OpenAI-->>Bot: HTTP 200 OK: Return generated response (HTTPS)
 
     %% Bot to BotService authentication (outgoing from bot)
-    Note over Bot,Entra: Bot authenticates to Bot Service for outgoing messages<br/>using MicrosoftAppId & MicrosoftAppPassword
-    Bot->>Entra: Request access token with<br/>MicrosoftAppId & MicrosoftAppPassword (HTTPS POST)
+    Note over Bot,Entra: Bot authenticates to Bot Service for outgoing messages<br/>using Application Client ID & Client Secret (Entra App Registration)
+    Bot->>Entra: Request access token with<br/>Application Client ID & Client Secret (Entra App Registration) (HTTPS POST)
     Entra-->>Bot: HTTP 200 OK: Return service access token (HTTPS)
 
     %% Bot sends response back to Teams through Bot Service
@@ -69,11 +69,9 @@ sequenceDiagram
 ## Authentication Notes
 
 - **Teams Authentication**: The user authenticates to Teams independently before any bot interaction occurs
-  <<<<<<< HEAD
 - **Bot Service Authentication**: Azure Bot Service signs requests with its own credentials (doesn't use bot's client secret)
-- # **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
-- **Bot Service Authentication**: The bot endpoint is secured using the app registration (MicrosoftAppId & MicrosoftAppPassword)
-  > > > > > > > 156112dd96f39bf6f3493d239b5f44bcffa6dc6e
+- **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
+- **Bot Service Authentication**: The bot endpoint is secured using the app registration (Application Client ID & Client Secret from Entra App Registration)
 - **Azure OpenAI Authentication**: The bot uses DefaultAzureCredential (managed identity) to authenticate with Azure OpenAI Service
 
 ## Endpoints
