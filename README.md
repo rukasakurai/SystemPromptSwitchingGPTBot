@@ -32,7 +32,7 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 
 ### ローカル実行
 
-1. 対象の Azure OpneAI Service のアクセス制御でローカル実行ユーザーに RBAC「Cognitive Services OpenAI User」ロールを付与します。**すでに共同作成者がついている場合でも必ず別途付与してください**
+1. 対象の Azure OpenAI Service のアクセス制御でローカル実行ユーザーに RBAC「Cognitive Services OpenAI User」ロールを付与します。**すでに共同作成者がついている場合でも必ず別途付与してください**
 1. `appsettings.Development.json`に Azure OpenAI Service のエンドポイントとデプロイ名をセットします。
 1. ターミナルで`az login`を実行して Azure OpenAI Service のリソースの RBAC に登録したアカウントで Azure にログインします。
 1. `dotnet run`または再生マークボタンでローカル実行します。
