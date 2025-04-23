@@ -69,8 +69,11 @@ sequenceDiagram
 ## Authentication Notes
 
 - **Teams Authentication**: The user authenticates to Teams independently before any bot interaction occurs
+  <<<<<<< HEAD
 - **Bot Service Authentication**: Azure Bot Service signs requests with its own credentials (doesn't use bot's client secret)
-- **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
+- # **Bot Authentication**: The bot validates incoming requests using the AppId in the JWT token
+- **Bot Service Authentication**: The bot endpoint is secured using the app registration (MicrosoftAppId & MicrosoftAppPassword)
+  > > > > > > > 156112dd96f39bf6f3493d239b5f44bcffa6dc6e
 - **Azure OpenAI Authentication**: The bot uses DefaultAzureCredential (managed identity) to authenticate with Azure OpenAI Service
 
 ## Endpoints
