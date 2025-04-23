@@ -87,5 +87,29 @@
             "supportsFiles": false
         }
     ],
+    "copilotAgents": [
+        {
+            "id": "ChatRPTAgent",
+            "name": {
+                "short": "ChatRPT",
+                "full": "ChatRPT - System Prompt Switching GPT Bot"
+            },
+            "description": {
+                "short": "ChatRPT with switchable system prompts",
+                "full": "A ChatGPT Teams bot that allows switching between different system prompts including character modes like Doraemon and Korosuke."
+            },
+            "icon": "color.png",
+            "botId": "4c7f0ce4-127b-442e-9e34-9a58bb25ccbc",
+            "defaultPrompt": "I want to use ChatRPT bot with the default system prompt.",
+            "customEngineAgents": [
+                {
+                    "id": "4c7f0ce4-127b-442e-9e34-9a58bb25ccbc",
+                    "name": "ChatRPT Default",
+                    "description": "Default system prompt for ChatRPT",
+                    "type": "bot"
+                }
+            ]
+        }
+    ],
     "validDomains": []
 }
