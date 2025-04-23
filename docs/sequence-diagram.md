@@ -62,24 +62,17 @@ sequenceDiagram
 | [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/fundamentals/whatis-id)  | Microsoft's cloud identity service, formerly known as Azure Active Directory, used for authentication and authorization. | [Free tier with premium features available](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing)               |
 | [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)    | Microsoft's cloud-based service providing API access to OpenAI's GPT models, used for generating responses.              | [Pay-per-use model based on tokens and models](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/) |
 
-## Communication Protocols
-
-- **HTTPS**: Used for all secure API communication between services
-- **WebSocket**: Used for real-time communication between Teams client and service for message delivery
-- **JWT (JSON Web Tokens)**: Used for authentication between services (carried over HTTPS)
-
 ## Authentication Notes
 
 - **Teams Authentication**: The user authenticates to Teams independently before any bot interaction occurs
 - **Bot Service Authentication**: The bot endpoint is secured using the app registration (MicrosoftAppId & MicrosoftAppPassword)
-- **No User Resource Authentication**: This bot implementation does not include functionality for the bot to access resources on behalf of the user (no OAuthCard, token exchange, etc.)
 - **Azure OpenAI Authentication**: The bot uses DefaultAzureCredential (managed identity) to authenticate with Azure OpenAI Service
 
 ## Endpoints
 
-- Teams Client: N/A
-- Microsoft Teams platform: N/A
-- Azure Bot Service: N/A
+- Teams Client: `https://teams.microsoft.com` (web client), N/A (desktop/mobile clients)
+- Microsoft Teams platform: `https://smba.trafficmanager.net/teams/`
+- Azure Bot Service: `https://api.botframework.com`
 - Bot App (App Service): `https://<your-app-service-name>.azurewebsites.net/api/messages` (secured endpoint)
 - Microsoft Entra ID: `https://login.microsoftonline.com/<tenant-id>`
 - Azure OpenAI Service: `https://<your-openai-resource-name>.openai.azure.com/`
