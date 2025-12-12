@@ -61,6 +61,27 @@ namespace SystemPromptSwitchingGPTBot.Tests
             );
         }
 
+        // Helper method to create ChatCompletions from JSON using reflection
+        // Note: This uses reflection to access internal Azure SDK methods. This is necessary
+        // because ChatCompletions doesn't have a public constructor or factory method.
+        // This makes the test somewhat fragile, but it's the only viable option for
+        // deterministic testing without creating a wrapper around the OpenAI client.
+        private ChatCompletions? CreateChatCompletionsFromJson(string json)
+        {
+            var assembly = typeof(ChatCompletions).Assembly;
+            var type = assembly.GetType("Azure.AI.OpenAI.ChatCompletions");
+            var method = type?.GetMethod("DeserializeChatCompletions",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            if (method != null)
+            {
+                using var jsonDoc = JsonDocument.Parse(json);
+                return (ChatCompletions?)method.Invoke(null, new object[] { jsonDoc.RootElement });
+            }
+
+            return null;
+        }
+
         private void SetupMockOpenAIResponse(string responseContent)
         {
             // Since ChatCompletions is difficult to create directly, we'll use a callback
@@ -94,22 +115,12 @@ namespace SystemPromptSwitchingGPTBot.Tests
                         }}
                     }}";
 
-                    // Parse using Azure SDK's internal method via reflection
-                    var assembly = typeof(ChatCompletions).Assembly;
-                    var type = assembly.GetType("Azure.AI.OpenAI.ChatCompletions");
-                    var method = type?.GetMethod("DeserializeChatCompletions",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-
-                    if (method != null)
+                    var completions = CreateChatCompletionsFromJson(json);
+                    if (completions != null)
                     {
-                        using var jsonDoc = JsonDocument.Parse(json);
-                        var completions = (ChatCompletions?)method.Invoke(null, new object[] { jsonDoc.RootElement });
-                        if (completions != null)
-                        {
-                            var mockResponse = new Mock<Response<ChatCompletions>>();
-                            mockResponse.Setup(r => r.Value).Returns(completions);
-                            return mockResponse.Object;
-                        }
+                        var mockResponse = new Mock<Response<ChatCompletions>>();
+                        mockResponse.Setup(r => r.Value).Returns(completions);
+                        return mockResponse.Object;
                     }
 
                     throw new InvalidOperationException("Could not create ChatCompletions");
@@ -278,16 +289,15 @@ namespace SystemPromptSwitchingGPTBot.Tests
                         }
                     }";
 
-                    var assembly = typeof(ChatCompletions).Assembly;
-                    var type = assembly.GetType("Azure.AI.OpenAI.ChatCompletions");
-                    var method = type?.GetMethod("DeserializeChatCompletions",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                    
-                    using var jsonDoc = JsonDocument.Parse(json);
-                    var completions = (ChatCompletions?)method?.Invoke(null, new object[] { jsonDoc.RootElement });
-                    var mockResponse = new Mock<Response<ChatCompletions>>();
-                    mockResponse.Setup(r => r.Value).Returns(completions!);
-                    return mockResponse.Object;
+                    var completions = CreateChatCompletionsFromJson(json);
+                    if (completions != null)
+                    {
+                        var mockResponse = new Mock<Response<ChatCompletions>>();
+                        mockResponse.Setup(r => r.Value).Returns(completions);
+                        return mockResponse.Object;
+                    }
+
+                    throw new InvalidOperationException("Could not create ChatCompletions");
                 });
 
             // Act & Assert - Switch to translate mode then send message
