@@ -91,8 +91,21 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             var currentConfing = _systemPrompts.FirstOrDefault(x => x.Id == (conversationData.CurrentConfigId != null ? conversationData.CurrentConfigId : "default"));
 
+            // Ensure we have a valid configuration
+            if (currentConfing == null)
+            {
+                currentConfing = _systemPrompts.FirstOrDefault(x => x.Id == "default");
+                if (currentConfing == null)
+                {
+                    var errorMessage = "システムプロンプトの設定が見つかりませんでした。";
+                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+                    return;
+                }
+            }
+
             if (String.IsNullOrEmpty(conversationData.CurrentConfigId))
             {
+                conversationData.CurrentConfigId = currentConfing.Id;
                 conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfing.SystemPrompt } };
             }
 
@@ -105,17 +118,47 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             messages.Add(new GptMessage() { Role = "user", Content = inputText });
 
             // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
-            ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
+            try
+            {
+                ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
-            // TODO:APIのレスポンスがエラーの場合の処理を追加する
-            var replyText = response.Choices[0].Message.Content;
-            await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+                if (response == null || response.Choices == null || response.Choices.Count == 0)
+                {
+                    var errorMessage = "申し訳ございません。AIからの応答を取得できませんでした。";
+                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+                    _logger.LogError("OpenAI response was null or had no choices");
+                    return;
+                }
 
-            messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
+                var replyText = response.Choices[0].Message.Content;
+                if (string.IsNullOrEmpty(replyText))
+                {
+                    var errorMessage = "申し訳ございません。AIからの応答が空でした。";
+                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+                    _logger.LogError("OpenAI response content was null or empty");
+                    return;
+                }
 
-            conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
-            conversationData.ChannelId = turnContext.Activity.ChannelId;
-            conversationData.Messages = messages;
+                await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+
+                messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
+
+                conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
+                conversationData.ChannelId = turnContext.Activity.ChannelId;
+                conversationData.Messages = messages;
+            }
+            catch (RequestFailedException ex)
+            {
+                var errorMessage = $"申し訳ございません。Azure OpenAI サービスへの接続に失敗しました。\n\nエラー: {ex.Message}";
+                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+                _logger.LogError(ex, "Azure OpenAI request failed: {ErrorCode} - {Message}", ex.ErrorCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"申し訳ございません。予期しないエラーが発生しました。\n\nエラー: {ex.Message}";
+                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+                _logger.LogError(ex, "Unexpected error in OnMessageActivityAsync: {Message}", ex.Message);
+            }
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)

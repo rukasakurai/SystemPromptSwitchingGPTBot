@@ -324,5 +324,75 @@ namespace SystemPromptSwitchingGPTBot.Tests
             var systemMessage = capturedOptions[0].Messages.FirstOrDefault(m => m is ChatRequestSystemMessage);
             Assert.NotNull(systemMessage);
         }
+
+        [Fact]
+        public async Task MultipleMessages_ShouldMaintainConversationHistory()
+        {
+            // Arrange
+            var bot = CreateBot();
+            var adapter = new TestAdapter();
+            var capturedOptions = new List<ChatCompletionsOptions>();
+            
+            // Capture the ChatCompletionsOptions when called to verify message count
+            _mockOpenAIClient
+                .Setup(client => client.GetChatCompletionsAsync(
+                    It.IsAny<ChatCompletionsOptions>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<ChatCompletionsOptions, CancellationToken>((opts, ct) => capturedOptions.Add(opts))
+                .ReturnsAsync((ChatCompletionsOptions options, CancellationToken ct) =>
+                {
+                    var json = @"{
+                        ""id"": ""test-id"",
+                        ""object"": ""chat.completion"",
+                        ""created"": 1234567890,
+                        ""model"": ""test-model"",
+                        ""choices"": [
+                            {
+                                ""index"": 0,
+                                ""message"": {
+                                    ""role"": ""assistant"",
+                                    ""content"": ""Response""
+                                },
+                                ""finish_reason"": ""stop""
+                            }
+                        ],
+                        ""usage"": {
+                            ""prompt_tokens"": 10,
+                            ""completion_tokens"": 20,
+                            ""total_tokens"": 30
+                        }
+                    }";
+
+                    var completions = CreateChatCompletionsFromJson(json);
+                    if (completions != null)
+                    {
+                        var mockResponse = new Mock<Response<ChatCompletions>>();
+                        mockResponse.Setup(r => r.Value).Returns(completions);
+                        return mockResponse.Object;
+                    }
+
+                    throw new InvalidOperationException("Could not create ChatCompletions");
+                });
+
+            // Act & Assert - Have a multi-turn conversation
+            await new TestFlow(adapter, async (turnContext, cancellationToken) =>
+            {
+                await bot.OnTurnAsync(turnContext, cancellationToken);
+            })
+            .Send("First message")
+            .AssertReply(activity => { })
+            .Send("Second message")
+            .AssertReply(activity => { })
+            .StartTestAsync();
+
+            // Verify OpenAI was called twice
+            Assert.Equal(2, capturedOptions.Count);
+
+            // Verify first call has 2 messages (system + user)
+            Assert.Equal(2, capturedOptions[0].Messages.Count);
+
+            // Verify second call has 4 messages (system + user + assistant + user)
+            Assert.Equal(4, capturedOptions[1].Messages.Count);
+        }
     }
 }
