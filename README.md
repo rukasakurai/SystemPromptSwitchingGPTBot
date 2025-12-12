@@ -104,3 +104,163 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 ### Sequence Diagram
 
 For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
+
+## トラブルシューティング
+
+### ボットが応答しない場合
+
+ボットがメッセージに応答しない場合、以下の項目を確認してください：
+
+#### 1. Azure OpenAI Service の接続確認
+
+- **エンドポイント URL の確認**: Azure Web Apps の「構成」→「アプリケーション設定」で `OpenAIEndpoint` が正しく設定されているか確認してください。
+- **デプロイ名の確認**: `OpenAIDeployment` が実際のデプロイ名と一致しているか確認してください。
+- **マネージド ID の権限確認**: Azure Web Apps のマネージド ID が Azure OpenAI Service のリソースで「Cognitive Services OpenAI User」ロールを持っているか確認してください。
+- **Azure OpenAI Service の状態確認**: Azure ポータルで Azure OpenAI Service が正常に動作しているか確認してください。
+
+#### 2. Bot Framework 認証の確認
+
+- **クライアントシークレットの有効期限**: Entra ID のアプリ登録で作成したクライアントシークレットの有効期限が切れていないか確認してください。有効期限が切れている場合は新しいシークレットを作成し、Azure Web Apps の `MicrosoftAppPassword` を更新してください。
+- **Microsoft App ID の確認**: Azure Web Apps の `MicrosoftAppId` が Azure Bot の Microsoft App ID と一致しているか確認してください。
+- **メッセージングエンドポイントの確認**: Azure Bot の「構成」画面で「メッセージングエンドポイント」が正しく設定されているか確認してください（例: `https://your-app.azurewebsites.net/api/messages`）。
+
+#### 3. ログの確認
+
+##### Azure Web Apps のログ
+
+1. **ログストリーム（リアルタイム）**
+   - Azure ポータル → Azure Web Apps → 「監視」→「ログストリーム」
+   - リアルタイムでアプリケーションログとシステムログを確認できます
+   - ボットにメッセージを送信しながら、エラーが表示されるか確認してください
+
+2. **診断設定の有効化**
+   - Azure ポータル → Azure Web Apps → 「監視」→「診断設定」
+   - 以下のログを有効にすることを推奨します：
+     - **アプリケーションログ**: `Information` レベル以上
+     - **詳細なエラーメッセージ**: 有効
+     - **失敗した要求のトレース**: 有効
+     - **Web サーバーログ**: 有効
+
+3. **ログファイルの確認**
+   - Azure ポータル → Azure Web Apps → 「開発ツール」→「高度なツール (Kudu)」→「Go」
+   - Kudu コンソールで「Debug console」→「CMD」を選択
+   - `LogFiles` フォルダ内のログファイルを確認：
+     - `Application/`: アプリケーションログ
+     - `DetailedErrors/`: 詳細なエラー情報
+     - `http/`: HTTP リクエストログ
+
+##### Application Insights（推奨）
+
+Application Insights を有効にすると、より詳細な診断が可能です：
+
+1. **Application Insights の有効化**
+   - Azure ポータル → Azure Web Apps → 「設定」→「Application Insights」
+   - 「Application Insights を有効にする」を選択
+
+2. **確認すべきログの種類**
+
+   **例外ログ（Exceptions）**
+   - Azure ポータル → Application Insights → 「調査」→「エラー」
+   - `[OnTurnError]` や `Azure OpenAI request failed` などのエラーを確認
+   - クエリ例：
+     ```kusto
+     exceptions
+     | where timestamp > ago(1d)
+     | where cloud_RoleName == "your-web-app-name"
+     | order by timestamp desc
+     ```
+
+   **トレースログ（Traces）**
+   - Azure ポータル → Application Insights → 「監視」→「ログ」
+   - アプリケーションが出力した `ILogger` のログを確認
+   - クエリ例：
+     ```kusto
+     traces
+     | where timestamp > ago(1d)
+     | where message contains "OpenAI" or message contains "OnTurnError"
+     | order by timestamp desc
+     ```
+
+   **依存関係の失敗（Dependencies）**
+   - Azure OpenAI Service への呼び出しの成功/失敗を確認
+   - クエリ例：
+     ```kusto
+     dependencies
+     | where timestamp > ago(1d)
+     | where name contains "openai" or target contains "openai"
+     | where success == false
+     | order by timestamp desc
+     ```
+
+   **要求ログ（Requests）**
+   - Bot Framework からの HTTP リクエストを確認
+   - クエリ例：
+     ```kusto
+     requests
+     | where timestamp > ago(1d)
+     | where url contains "/api/messages"
+     | where success == false
+     | order by timestamp desc
+     ```
+
+##### Azure Bot Service のログ
+
+1. **Bot Analytics**
+   - Azure ポータル → Azure Bot → 「Analytics」
+   - メッセージ数やチャンネルごとの統計を確認できます
+
+2. **チャンネルの状態確認**
+   - Azure ポータル → Azure Bot → 「チャンネル」
+   - Teams チャンネルが「実行中」状態になっているか確認
+
+##### Log Analytics（統合ログ分析）
+
+複数のリソースのログを統合して分析する場合：
+
+1. **診断設定で Log Analytics への送信を有効化**
+   - Azure Web Apps → 「監視」→「診断設定」→「診断設定を追加する」
+   - すべてのログカテゴリを選択
+   - 送信先: Log Analytics ワークスペース
+
+2. **Log Analytics でのクエリ例**
+   ```kusto
+   // すべてのエラーを検索
+   AppServiceConsoleLogs
+   | where TimeGenerated > ago(1d)
+   | where ResultDescription contains "error" or ResultDescription contains "exception"
+   | order by TimeGenerated desc
+   
+   // OpenAI 関連のログを検索
+   AppServiceConsoleLogs
+   | where TimeGenerated > ago(1d)
+   | where ResultDescription contains "OpenAI" or ResultDescription contains "Azure.AI.OpenAI"
+   | order by TimeGenerated desc
+   ```
+
+##### 確認すべき主なエラーパターン
+
+1. **認証エラー**
+   - `401 Unauthorized`: Bot または Azure OpenAI の認証に失敗
+   - `403 Forbidden`: 権限不足（RBAC の確認が必要）
+
+2. **接続エラー**
+   - `RequestFailedException`: Azure OpenAI Service への接続失敗
+   - `TimeoutException`: タイムアウト
+
+3. **設定エラー**
+   - `NullReferenceException`: 設定値が未設定または不正
+   - `DeploymentNotFound`: OpenAI のデプロイ名が存在しない
+
+#### 4. Web App の再起動
+
+設定を変更した後は、Azure Web Apps を再起動して変更を反映させてください。
+
+#### 5. Bot Framework Emulator でのテスト
+
+ローカル環境で Bot Framework Emulator を使用してボットをテストし、問題を切り分けることができます。
+
+### よくあるエラーメッセージ
+
+- **「Azure OpenAI サービスへの接続に失敗しました」**: Azure OpenAI Service の認証または接続に問題があります。マネージド ID の権限とエンドポイント URL を確認してください。
+- **「AIからの応答を取得できませんでした」**: Azure OpenAI Service からの応答が不正です。デプロイ名とモデルの状態を確認してください。
+- **「システムプロンプトの設定が見つかりませんでした」**: システムプロンプトの設定に問題があります。コードの設定を確認してください。

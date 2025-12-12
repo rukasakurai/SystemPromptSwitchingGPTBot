@@ -16,6 +16,7 @@ using System;
 using Azure.Identity;
 using _07JP27.SystemPromptSwitchingGPTBot.SystemPrompt;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace _07JP27.SystemPromptSwitchingGPTBot
 {
@@ -54,11 +55,28 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
 
             // Create the OpenAI client
             services.AddScoped(provider => 
-                new OpenAIClient(
-                    new Uri(Configuration["OpenAIEndpoint"]),
+            {
+                var logger = provider.GetRequiredService<ILogger<Startup>>();
+                var endpoint = Configuration["OpenAIEndpoint"];
+                var deployment = Configuration["OpenAIDeployment"];
+                
+                logger.LogInformation("Initializing OpenAI client with endpoint: {endpoint}, deployment: {deployment}", 
+                    endpoint, deployment);
+                
+                if (string.IsNullOrEmpty(endpoint))
+                {
+                    logger.LogError("OpenAIEndpoint configuration is missing or empty");
+                }
+                if (string.IsNullOrEmpty(deployment))
+                {
+                    logger.LogError("OpenAIDeployment configuration is missing or empty");
+                }
+                
+                return new OpenAIClient(
+                    new Uri(endpoint),
                     new DefaultAzureCredential()
-                )
-            );
+                );
+            });
 
             // Create the SystemPromptCatalog
             var catalog = new List<IGptConfiguration>

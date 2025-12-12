@@ -44,11 +44,10 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             string inputText = turnContext.Activity.Text;
 
-            _logger.LogTrace("LogTrace");
-            _logger.LogInformation("inputText: {inputText}", inputText);
-            _logger.LogWarning("LogWarning");
-            _logger.LogError("LogError");
-            _logger.LogInformation("StackTrace: '{0}'", Environment.StackTrace);
+            _logger.LogInformation("Received message from user: {inputText}, ChannelId: {channelId}, ConversationId: {conversationId}", 
+                inputText, 
+                turnContext.Activity.ChannelId, 
+                turnContext.Activity.Conversation?.Id);
 
             if (inputText.StartsWith("/"))
             {
@@ -107,6 +106,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             {
                 conversationData.CurrentConfigId = currentConfing.Id;
                 conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfing.SystemPrompt } };
+                _logger.LogInformation("Initialized new conversation with config: {configId}", currentConfing.Id);
             }
 
             List<GptMessage> messages = new();
@@ -120,6 +120,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
             try
             {
+                _logger.LogInformation("Calling Azure OpenAI with {messageCount} messages, config: {configId}", messages.Count, currentConfing.Id);
                 ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
                 if (response == null || response.Choices == null || response.Choices.Count == 0)
@@ -139,6 +140,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                     return;
                 }
 
+                _logger.LogInformation("Successfully received response from Azure OpenAI, length: {length}", replyText.Length);
                 await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
 
                 messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
