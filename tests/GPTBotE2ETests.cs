@@ -103,7 +103,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
                                 ""index"": 0,
                                 ""message"": {{
                                     ""role"": ""assistant"",
-                                    ""content"": ""{responseContent.Replace("\"", "\\\"")}""
+                                    ""content"": {JsonSerializer.Serialize(responseContent)}
                                 }},
                                 ""finish_reason"": ""stop""
                             }}
