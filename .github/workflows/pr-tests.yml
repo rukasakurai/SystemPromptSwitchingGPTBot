@@ -1,0 +1,32 @@
+name: PR - dotnet test
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "tests/**"
+      - ".github/workflows/pr-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            8.0.x
+          cache: true
+          cache-dependency-path: |
+            app/*.csproj
+            tests/*.csproj
+
+      - name: Run tests
+        run: dotnet test ./tests --configuration Release
