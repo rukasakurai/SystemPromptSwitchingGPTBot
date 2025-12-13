@@ -40,3 +40,8 @@ module app 'app.bicep' = {
     openAiDeploymentName: platform.outputs.openAiDeploymentName
   }
 }
+
+// Expose useful outputs from platform and app modules
+output webAppHostName string = app.outputs.webAppHostName
+output botServiceName string = app.outputs.botServiceName
+output openAiServiceName string = platform.outputs.openAiServiceName
