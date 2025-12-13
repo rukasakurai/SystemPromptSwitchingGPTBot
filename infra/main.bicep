@@ -27,9 +27,9 @@ module platform 'platform.bicep' = {
   }
 }
 
-// Deploy use case specific resources (Bot and Web App)
-module usecase 'usecase.bicep' = {
-  name: 'usecase'
+// Deploy app resources (Bot and Web App)
+module app 'app.bicep' = {
+  name: 'app'
   scope: resourceGroup
   params: {
     resourceToken: resourceToken
