@@ -39,7 +39,7 @@
     ],
     "bots": [
         {
-            "botId": "916985ca-fa45-4bdf-af81-3a2ee00a00c3",
+            "botId": "39a44d5b-ecd2-4329-841f-ead30ba367cf",
             "scopes": [
                 "personal",
                 "groupChat",
@@ -89,7 +89,7 @@
     "copilotAgents": {
         "customEngineAgents": [
             {
-                "id": "916985ca-fa45-4bdf-af81-3a2ee00a00c3",
+                "id": "39a44d5b-ecd2-4329-841f-ead30ba367cf",
                 "type": "bot"
             }
         ]
