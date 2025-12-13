@@ -104,18 +104,49 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             messages.Add(new GptMessage() { Role = "user", Content = inputText });
 
-            // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
-            ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
+            try
+            {
+                // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
+                ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
-            // TODO:APIのレスポンスがエラーの場合の処理を追加する
-            var replyText = response.Choices[0].Message.Content;
-            await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+                if (response == null)
+                {
+                    _logger.LogError("OpenAI API returned null response");
+                    await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);
+                    return;
+                }
 
-            messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
+                if (response.Choices == null || response.Choices.Count == 0)
+                {
+                    _logger.LogError("OpenAI API returned no choices in response");
+                    await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);
+                    return;
+                }
 
-            conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
-            conversationData.ChannelId = turnContext.Activity.ChannelId;
-            conversationData.Messages = messages;
+                var replyText = response.Choices[0].Message.Content;
+                await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+
+                messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
+
+                conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
+                conversationData.ChannelId = turnContext.Activity.ChannelId;
+                conversationData.Messages = messages;
+            }
+            catch (Azure.RequestFailedException ex)
+            {
+                _logger.LogError(ex, "OpenAI API request failed: {Message}", ex.Message);
+                var errorMessage = "申し訳ございません。OpenAI API への接続中にエラーが発生しました。";
+                if (ex.Status == 401 || ex.Status == 403)
+                {
+                    errorMessage += " 認証情報を確認してください。";
+                }
+                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating message: {Message}", ex.Message);
+                await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。メッセージの生成中にエラーが発生しました。", "申し訳ございません。メッセージの生成中にエラーが発生しました。"), cancellationToken);
+            }
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)

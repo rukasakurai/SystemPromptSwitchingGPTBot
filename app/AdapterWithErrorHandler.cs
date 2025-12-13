@@ -5,6 +5,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 
 namespace _07JP27.SystemPromptSwitchingGPTBot
 {
@@ -21,9 +22,56 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                 // to add telemetry capture to your bot.
                 logger.LogError(exception, $"[OnTurnError] unhandled error : {exception.Message}");
 
+                // Check for ErrorResponseException to log detailed authentication information
+                if (exception is HttpOperationException httpException)
+                {
+                    logger.LogError("HttpOperationException details");
+                    logger.LogError("RequestUrl: {RequestUrl}", httpException.Request?.RequestUri?.ToString() ?? "N/A");
+                    logger.LogError("RequestMethod: {RequestMethod}", httpException.Request?.Method?.ToString() ?? "N/A");
+                    logger.LogError("StatusCode: {StatusCode}", httpException.Response?.StatusCode.ToString() ?? "N/A");
+                    logger.LogError("ResponseContent: {ResponseContent}", httpException.Response?.Content ?? "N/A");
+                    
+                    // Log request headers (credentials info)
+                    if (httpException.Request?.Headers != null)
+                    {
+                        logger.LogError("RequestHeaders present");
+                        var sensitiveHeaders = new[] { "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token", "Api-Key", "X-Access-Token" };
+                        foreach (var header in httpException.Request.Headers)
+                        {
+                            // Mask sensitive header values
+                            var isSensitive = false;
+                            foreach (var sensitiveHeader in sensitiveHeaders)
+                            {
+                                if (header.Key.Equals(sensitiveHeader, System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    isSensitive = true;
+                                    break;
+                                }
+                            }
+                            var headerValue = isSensitive
+                                ? "[REDACTED]"
+                                : string.Join(", ", header.Value);
+                            logger.LogError("HeaderKey: {HeaderKey}, HeaderValue: {HeaderValue}", header.Key, headerValue);
+                        }
+                    }
+                }
+
+                // Check for common authentication issues and provide helpful messages
+                string userMessage = "ボットでエラーまたはバグが発生しました。";
+                string detailMessage = "このボットを継続して実行するには、ボットのソースコードを修正してください。";
+                
+                if (exception.Message.Contains("Unauthorized", System.StringComparison.OrdinalIgnoreCase) || 
+                    exception.Message.Contains("401", System.StringComparison.OrdinalIgnoreCase) ||
+                    exception.Message.Contains("authentication", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    userMessage = "認証エラーが発生しました。ボットの設定を確認してください。";
+                    detailMessage = "MicrosoftAppId、MicrosoftAppPassword、または MicrosoftAppTenantId の設定を確認してください。詳細はトラブルシューティングドキュメントを参照してください。";
+                    logger.LogError("Authentication error detected. Please verify MicrosoftAppId, MicrosoftAppPassword, and MicrosoftAppTenantId configuration.");
+                }
+
                 // Send a message to the user
-                await turnContext.SendActivityAsync("The bot encountered an error or bug.");
-                await turnContext.SendActivityAsync("To continue to run this bot, please fix the bot source code. test");
+                await turnContext.SendActivityAsync(userMessage);
+                await turnContext.SendActivityAsync(detailMessage);
 
                 // Send a trace activity, which will be displayed in the Bot Framework Emulator
                 await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
