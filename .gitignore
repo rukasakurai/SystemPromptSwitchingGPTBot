@@ -487,3 +487,7 @@ $RECYCLE.BIN/
 app/DeploymentScripts/*
 app/DeploymentTemplates/*
 
+# Bicep generated files
+infra/*.json
+!infra/main.parameters.json
+

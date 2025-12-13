@@ -1,4 +1,10 @@
 name: SystemPromptSwitchingGPTBot
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
 services:
   backend:
     project: ./app
