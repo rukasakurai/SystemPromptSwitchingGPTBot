@@ -36,12 +36,21 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
             {
                 await _adapter.ProcessAsync(Request, Response, _bot);
             }
-            catch (System.Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError(ex, "Unhandled exception while processing /api/messages. Returning 200 to avoid channel retries.");
+                // Swallow authentication failures to avoid channel retries, but log them.
+                _logger.LogWarning(ex, "Authentication failure while processing /api/messages. Returning 200 to avoid channel retries.");
                 if (!Response.HasStarted)
                 {
                     Response.StatusCode = 200;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception while processing /api/messages.");
+                if (!Response.HasStarted)
+                {
+                    Response.StatusCode = 500;
                 }
             }
         }
