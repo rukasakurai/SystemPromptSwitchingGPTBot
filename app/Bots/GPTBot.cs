@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Identity;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using _07JP27.SystemPromptSwitchingGPTBot.SystemPrompt;
@@ -45,10 +44,11 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             string inputText = turnContext.Activity.Text;
 
-            _logger.LogInformation("Received message from user: {inputText}, ChannelId: {channelId}, ConversationId: {conversationId}", 
-                inputText, 
-                turnContext.Activity.ChannelId, 
-                turnContext.Activity.Conversation?.Id);
+            _logger.LogTrace("LogTrace");
+            _logger.LogInformation("inputText: {inputText}", inputText);
+            _logger.LogWarning("LogWarning");
+            _logger.LogError("LogError");
+            _logger.LogInformation("StackTrace: '{0}'", Environment.StackTrace);
 
             if (inputText.StartsWith("/"))
             {
@@ -58,13 +58,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 {
                     var resetMessage = "会話履歴をクリアしました。";
                     await turnContext.SendActivityAsync(MessageFactory.Text(resetMessage, resetMessage), cancellationToken);
-                    var currentMode = _systemPrompts.FirstOrDefault(x => x.Id == conversationData.CurrentConfigId) 
-                                      ?? _systemPrompts.FirstOrDefault(x => x.Id == "default");
-                    if (currentMode == null)
-                    {
-                        _logger.LogError("Failed to find current mode or default mode for clear command");
-                        return;
-                    }
+                    var currentMode = _systemPrompts.FirstOrDefault(x => x.Id == conversationData.CurrentConfigId);
                     conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentMode.SystemPrompt } };
                     return;
                 }
@@ -95,25 +89,11 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 userProfile.Name = userNameFronContext;
             }
 
-            var currentConfig = _systemPrompts.FirstOrDefault(x => x.Id == (conversationData.CurrentConfigId != null ? conversationData.CurrentConfigId : "default"));
-
-            // Ensure we have a valid configuration
-            if (currentConfig == null)
-            {
-                currentConfig = _systemPrompts.FirstOrDefault(x => x.Id == "default");
-                if (currentConfig == null)
-                {
-                    var errorMessage = "システムプロンプトの設定が見つかりませんでした。";
-                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                    return;
-                }
-            }
+            var currentConfing = _systemPrompts.FirstOrDefault(x => x.Id == (conversationData.CurrentConfigId != null ? conversationData.CurrentConfigId : "default"));
 
             if (String.IsNullOrEmpty(conversationData.CurrentConfigId))
             {
-                conversationData.CurrentConfigId = currentConfig.Id;
-                conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfig.SystemPrompt } };
-                _logger.LogInformation("Initialized new conversation with config: {configId}", currentConfig.Id);
+                conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfing.SystemPrompt } };
             }
 
             List<GptMessage> messages = new();
@@ -125,67 +105,17 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             messages.Add(new GptMessage() { Role = "user", Content = inputText });
 
             // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
-            try
-            {
-                _logger.LogInformation("Calling Azure OpenAI with {messageCount} messages, config: {configId}", messages.Count, currentConfig.Id);
-                ChatCompletions response = await generateMessage(messages, currentConfig.Temperature, currentConfig.MaxTokens);
+            ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
-                if (response == null || response.Choices == null || response.Choices.Count == 0)
-                {
-                    var errorMessage = "申し訳ございません。AIからの応答を取得できませんでした。";
-                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                    _logger.LogError("OpenAI response was null or had no choices");
-                    return;
-                }
+            // TODO:APIのレスポンスがエラーの場合の処理を追加する
+            var replyText = response.Choices[0].Message.Content;
+            await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
 
-                var replyText = response.Choices[0].Message.Content;
-                if (string.IsNullOrEmpty(replyText))
-                {
-                    var errorMessage = "申し訳ございません。AIからの応答が空でした。";
-                    await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                    _logger.LogError("OpenAI response content was null or empty");
-                    return;
-                }
+            messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
 
-                _logger.LogInformation("Successfully received response from Azure OpenAI, length: {length}", replyText.Length);
-                await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
-
-                messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
-
-                conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
-                conversationData.ChannelId = turnContext.Activity.ChannelId;
-                conversationData.Messages = messages;
-            }
-            catch (CredentialUnavailableException ex)
-            {
-                var errorMessage = $"申し訳ございません。Azure 認証情報が利用できません。マネージド ID が有効になっているか確認してください。\n\nエラー: {ex.Message}";
-                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                _logger.LogError(ex, "Credential unavailable (MSAL error). Managed Identity may not be enabled or configured correctly. Exception: {Message}", ex.Message);
-            }
-            catch (AuthenticationFailedException ex)
-            {
-                var errorMessage = $"申し訳ございません。Azure 認証に失敗しました。マネージド ID の設定を確認してください。\n\nエラー: {ex.Message}";
-                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                _logger.LogError(ex, "Azure authentication failed (MSAL error). This usually means: 1) Managed Identity not enabled, 2) Missing RBAC role assignment, 3) Wrong tenant/client credentials. Exception: {Message}", ex.Message);
-            }
-            catch (RequestFailedException ex) when (ex.Status == 401 || ex.Status == 403)
-            {
-                var errorMessage = $"申し訳ございません。Azure OpenAI サービスへのアクセスが拒否されました (HTTP {ex.Status})。\n\nマネージド ID に 'Cognitive Services OpenAI User' ロールが付与されているか確認してください。\n\nエラー: {ex.Message}";
-                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                _logger.LogError(ex, "Azure OpenAI access denied: {ErrorCode} - {Message}. Check RBAC role assignment for Managed Identity.", ex.ErrorCode, ex.Message);
-            }
-            catch (RequestFailedException ex)
-            {
-                var errorMessage = $"申し訳ございません。Azure OpenAI サービスへの接続に失敗しました (HTTP {ex.Status})。\n\nエラー: {ex.Message}";
-                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                _logger.LogError(ex, "Azure OpenAI request failed: {ErrorCode} - {Message}", ex.ErrorCode, ex.Message);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = $"申し訳ございません。予期しないエラーが発生しました。\n\nエラーの種類: {ex.GetType().Name}\n詳細: {ex.Message}";
-                await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
-                _logger.LogError(ex, "Unexpected error in OnMessageActivityAsync: {ExceptionType} - {Message}", ex.GetType().Name, ex.Message);
-            }
+            conversationData.Timestamp = turnContext.Activity.Timestamp.ToString();
+            conversationData.ChannelId = turnContext.Activity.ChannelId;
+            conversationData.Messages = messages;
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)

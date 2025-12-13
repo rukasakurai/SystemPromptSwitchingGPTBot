@@ -19,17 +19,14 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                 // NOTE: In production environment, you should consider logging this to
                 // Azure Application Insights. Visit https://aka.ms/bottelemetry to see how
                 // to add telemetry capture to your bot.
-                logger.LogError(exception, "[OnTurnError] Unhandled error in conversation. ActivityId: {activityId}, ConversationId: {conversationId}, Exception: {exceptionType}", 
-                    turnContext.Activity?.Id,
-                    turnContext.Activity?.Conversation?.Id,
-                    exception.GetType().Name);
+                logger.LogError(exception, $"[OnTurnError] unhandled error : {exception.Message}");
 
                 // Send a message to the user
-                var errorMessage = $"申し訳ございません。ボットでエラーが発生しました。\n\nエラーの種類: {exception.GetType().Name}\n詳細: {exception.Message}";
-                await turnContext.SendActivityAsync(errorMessage);
+                await turnContext.SendActivityAsync("The bot encountered an error or bug.");
+                await turnContext.SendActivityAsync("To continue to run this bot, please fix the bot source code. test");
 
                 // Send a trace activity, which will be displayed in the Bot Framework Emulator
-                await turnContext.TraceActivityAsync("OnTurnError Trace", exception.ToString(), "https://www.botframework.com/schemas/error", "TurnError");
+                await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
             };
         }
     }

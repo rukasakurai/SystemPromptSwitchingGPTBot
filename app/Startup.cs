@@ -16,7 +16,6 @@ using System;
 using Azure.Identity;
 using _07JP27.SystemPromptSwitchingGPTBot.SystemPrompt;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 
 namespace _07JP27.SystemPromptSwitchingGPTBot
 {
@@ -55,42 +54,11 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
 
             // Create the OpenAI client
             services.AddScoped(provider => 
-            {
-                var logger = provider.GetRequiredService<ILogger<Startup>>();
-                var endpoint = Configuration["OpenAIEndpoint"];
-                var deployment = Configuration["OpenAIDeployment"];
-                
-                logger.LogInformation("Initializing OpenAI client with endpoint: {endpoint}, deployment: {deployment}", 
-                    endpoint, deployment);
-                
-                if (string.IsNullOrEmpty(endpoint))
-                {
-                    logger.LogError("OpenAIEndpoint configuration is missing or empty");
-                }
-                if (string.IsNullOrEmpty(deployment))
-                {
-                    logger.LogError("OpenAIDeployment configuration is missing or empty");
-                }
-                
-                // Configure DefaultAzureCredential with logging
-                var credentialOptions = new DefaultAzureCredentialOptions
-                {
-                    // Enable logging for authentication attempts
-                    Diagnostics = 
-                    {
-                        IsLoggingEnabled = true,
-                        LoggedHeaderNames = { "x-ms-request-id" },
-                        LoggedQueryParameters = { "api-version" }
-                    }
-                };
-                
-                logger.LogInformation("Creating DefaultAzureCredential for Managed Identity authentication");
-                
-                return new OpenAIClient(
-                    new Uri(endpoint),
-                    new DefaultAzureCredential(credentialOptions)
-                );
-            });
+                new OpenAIClient(
+                    new Uri(Configuration["OpenAIEndpoint"]),
+                    new DefaultAzureCredential()
+                )
+            );
 
             // Create the SystemPromptCatalog
             var catalog = new List<IGptConfiguration>
