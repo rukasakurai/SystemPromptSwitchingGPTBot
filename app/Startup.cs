@@ -54,7 +54,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
 
             // Create the OpenAI client
             services.AddScoped(provider => 
-                new OpenAIClient(
+                new AzureOpenAIClient(
                     new Uri(Configuration["OpenAIEndpoint"]),
                     new DefaultAzureCredential()
                 )
