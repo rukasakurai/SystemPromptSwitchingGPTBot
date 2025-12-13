@@ -14,6 +14,8 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
+var openAiEndpoint = 'https://${openAiService.name}.openai.azure.com/'
+
 // Azure OpenAI Model Deployment
 resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   parent: openAiService
@@ -61,7 +63,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 // Outputs for use by other modules
 output openAiServiceId string = openAiService.id
 output openAiServiceName string = openAiService.name
-output openAiEndpoint string = openAiService.properties.endpoint
+output openAiEndpoint string = openAiEndpoint
 output openAiDeploymentName string = openAIModel.name
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString

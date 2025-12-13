@@ -5,15 +5,6 @@ infra:
   path: infra
   module: main
 
-hooks:
-  preprovision:
-    windows:
-      shell: pwsh
-      run: ./infra/hooks/preprovision.ps1
-    linux:
-      shell: pwsh
-      run: ./infra/hooks/preprovision.ps1
-
 services:
   backend:
     project: ./app

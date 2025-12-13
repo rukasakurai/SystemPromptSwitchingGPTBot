@@ -57,7 +57,7 @@ if ([string]::IsNullOrWhiteSpace($tenantId)) {
 }
 
 $azdEnvName = if ($env:AZD_ENV_NAME) { $env:AZD_ENV_NAME } else { 'azd' }
-$displayName = "bot-$azdEnvName-$(Get-Date -Format 'yyyyMMddHHmmss')"
+$displayName = "bot-$azdEnvName-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
 
 Write-Host "Creating Entra app registration: $displayName"
 $appId = (& az ad app create `

@@ -4,8 +4,11 @@
 - Sign in: `az login`
 - Create/select an `azd` environment:
   - `azd env new <envName>` (or `azd env select <envName>`)
+- Create bot identity (Entra app registration + client secret):
+  - `pwsh -File ./infra/hooks/preprovision.ps1`
 - Provision Azure resources: `azd provision`
-  - This runs the `preprovision` hook which creates a new bot identity (Entra app registration + client secret) and sets the `microsoftApp*` environment values used by Bicep.
+  - This uses the `microsoftApp*` values set by `preprovision.ps1`.
+  - On first provision, `azd` may still prompt you to confirm infrastructure parameters and the resource group; it persists your answers under `.azure/<env>/`.
 - Deploy the app: `azd deploy`
 - In Azure Bot resource: enable **Teams** channel
 - Teams app package:
