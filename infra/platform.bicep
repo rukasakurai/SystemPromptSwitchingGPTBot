@@ -1,6 +1,9 @@
 param resourceToken string
 param location string
 
+@description('The version of the GPT-3.5-turbo model to deploy')
+param gptModelVersion string = '0613'
+
 // Azure OpenAI Service
 resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: 'oai-${resourceToken}'
@@ -19,7 +22,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-0
     model: {
       format: 'OpenAI'
       name: 'gpt-35-turbo'
-      version: '0613'
+      version: gptModelVersion
     }
   }
   sku: {
@@ -50,7 +53,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'plan-${resourceToken}'
   location: location
   sku: {
-    name: 'P1'
+    name: 'P0v3'
     capacity: 1
   }
 }
@@ -58,6 +61,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 // Outputs for use by other modules
 output openAiServiceId string = openAiService.id
 output openAiServiceName string = openAiService.name
+output openAiEndpoint string = openAiService.properties.endpoint
+output openAiDeploymentName string = openAIModel.name
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
 output appServicePlanId string = appServicePlan.id

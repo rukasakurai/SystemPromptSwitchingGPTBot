@@ -36,5 +36,7 @@ module app 'app.bicep' = {
     location: location
     appServicePlanId: platform.outputs.appServicePlanId
     appInsightsConnectionString: platform.outputs.appInsightsConnectionString
+    openAiEndpoint: platform.outputs.openAiEndpoint
+    openAiDeploymentName: platform.outputs.openAiDeploymentName
   }
 }

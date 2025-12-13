@@ -2,6 +2,8 @@ param resourceToken string
 param location string
 param appServicePlanId string
 param appInsightsConnectionString string
+param openAiEndpoint string
+param openAiDeploymentName string
 
 // Azure Web App
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
@@ -20,6 +22,10 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
 }
 
 // Azure Bot Service
+// NOTE: The msaAppId is generated using a deterministic GUID, but this does NOT create
+// the corresponding Microsoft App Registration in Azure AD. You must manually create
+// an app registration with this ID in Azure AD before the bot can authenticate.
+// Alternatively, consider parameterizing msaAppId and msaAppTenantId to use an existing app registration.
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   name: 'bot-${resourceToken}'
   location: 'global'
@@ -35,7 +41,7 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   }
 }
 
-// Add Application Insights connection string to App Settings
+// Add Application Insights and Azure OpenAI configuration to App Settings
 // WARNING: This block overwrites all existing app settings on the web app.
 // Be sure to include ALL required app settings here, as any not listed will be removed.
 resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
@@ -43,6 +49,8 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
   name: 'appsettings'
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    OpenAIEndpoint: openAiEndpoint
+    OpenAIDeployment: openAiDeploymentName
     // Add any other required app settings below
   }
 }
