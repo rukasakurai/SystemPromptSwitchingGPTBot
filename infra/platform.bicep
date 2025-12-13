@@ -12,6 +12,13 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   sku: {
     name: 'S0'
   }
+  properties: {
+    // Some tenants enforce keyless auth via Azure Policy.
+    // Setting this explicitly avoids drift and matches the intended Entra ID / managed identity flow.
+    disableLocalAuth: true
+    // Required by the 2025-09-01 API version.
+    publicNetworkAccess: 'Enabled'
+  }
 }
 
 var openAiEndpoint = 'https://${openAiService.name}.openai.azure.com/'

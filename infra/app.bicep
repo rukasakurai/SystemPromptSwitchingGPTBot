@@ -39,6 +39,10 @@ resource webApp 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' existing = {
+  name: 'oai-${resourceToken}'
+}
+
 // Azure Bot Service
 // NOTE: The msaAppId is generated using a deterministic GUID, but this does NOT create
 // the corresponding Microsoft App Registration in Azure AD. You must manually create
@@ -79,12 +83,13 @@ resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
 }
 
 // Role Assignment for Managed Identity to access Azure OpenAI
-module openAiRoleUser 'role.bicep' = {
-  name: 'openai-role-user'
-  params: {
+resource openAiRoleUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(openAiService.id, webApp.id, '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  scope: openAiService
+  properties: {
     principalId: webApp.identity.principalId
-    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' // Cognitive Services OpenAI User
     principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
   }
 }
 
