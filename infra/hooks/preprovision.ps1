@@ -30,16 +30,19 @@ function New-AppClientSecret {
         $endDate = (Get-Date).ToUniversalTime().AddDays($days).ToString('yyyy-MM-ddTHH:mm:ssZ')
         Write-Host "Trying client secret expiry: $days days (endDate=$endDate)"
 
+        # az writes policy failures to stderr; treat them as expected retries and keep output clean.
         $secret = & az ad app credential reset `
             --id $appId `
             --append `
             --display-name $displayName `
             --end-date $endDate `
-            --query password -o tsv
+            --query password -o tsv 2>$null
 
         if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($secret)) {
             return $secret.Trim()
         }
+
+        Write-Host "Client secret expiry $days days was rejected; trying shorter."
     }
 
     throw 'Failed to create client secret. Your tenant policy may require an even shorter lifetime, or your account may lack permission to create secrets.'
@@ -57,7 +60,7 @@ if ([string]::IsNullOrWhiteSpace($tenantId)) {
 }
 
 $azdEnvName = if ($env:AZD_ENV_NAME) { $env:AZD_ENV_NAME } else { 'azd' }
-$displayName = "bot-$azdEnvName-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
+$displayName = "systempromptswitchinggptbot-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
 
 Write-Host "Creating Entra app registration: $displayName"
 $appId = (& az ad app create `
