@@ -5,17 +5,28 @@ param location string
 param gptModelVersion string = '2024-08-06'
 
 // Azure OpenAI Service
-resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   name: 'oai-${resourceToken}'
   location: location
   kind: 'OpenAI'
   sku: {
     name: 'S0'
   }
+  properties: {
+    // Some tenants enforce keyless auth via Azure Policy.
+    // Setting this explicitly avoids drift and matches the intended Entra ID / managed identity flow.
+    disableLocalAuth: true
+    // Required by the 2025-09-01 API version.
+    publicNetworkAccess: 'Enabled'
+  }
 }
 
+// Use the endpoint emitted by the resource provider.
+// In some configurations this is a regional Cognitive Services endpoint rather than a {name}.openai.azure.com hostname.
+var openAiEndpoint = openAiService.properties.endpoint
+
 // Azure OpenAI Model Deployment
-resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-01' = {
   parent: openAiService
   name: 'gpt-4o'
   properties: {
@@ -32,7 +43,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-0
 }
 
 // Log Analytics workspace
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: 'log-${resourceToken}'
   location: location
 }
@@ -49,7 +60,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // Azure App Service Plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: 'plan-${resourceToken}'
   location: location
   sku: {
@@ -61,7 +72,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 // Outputs for use by other modules
 output openAiServiceId string = openAiService.id
 output openAiServiceName string = openAiService.name
-output openAiEndpoint string = openAiService.properties.endpoint
+output openAiEndpoint string = openAiEndpoint
 output openAiDeploymentName string = openAIModel.name
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString

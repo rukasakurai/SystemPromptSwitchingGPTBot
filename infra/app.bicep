@@ -24,7 +24,7 @@ param microsoftAppPassword string
 param microsoftAppTenantId string = subscription().tenantId
 
 // Azure Web App
-resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+resource webApp 'Microsoft.Web/sites@2025-03-01' = {
   name: 'web-${resourceToken}'
   location: location
   tags: { 'azd-service-name': 'backend' }
@@ -37,6 +37,10 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
       windowsFxVersion: 'DOTNETCORE|8.0'
     }
   }
+}
+
+resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' existing = {
+  name: 'oai-${resourceToken}'
 }
 
 // Azure Bot Service
@@ -63,7 +67,7 @@ resource botService 'Microsoft.BotService/botServices@2022-09-15' = {
 // Add Application Insights and Azure OpenAI configuration to App Settings
 // WARNING: This block overwrites all existing app settings on the web app.
 // Be sure to include ALL required app settings here, as any not listed will be removed.
-resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
+resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: webApp
   name: 'appsettings'
   properties: {
@@ -79,12 +83,13 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
 }
 
 // Role Assignment for Managed Identity to access Azure OpenAI
-module openAiRoleUser 'role.bicep' = {
-  name: 'openai-role-user'
-  params: {
+resource openAiRoleUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(openAiService.id, webApp.id, '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  scope: openAiService
+  properties: {
     principalId: webApp.identity.principalId
-    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' // Cognitive Services OpenAI User
     principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
   }
 }
 

@@ -53,8 +53,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
             services.AddSingleton(new ConversationState(storage));
 
             // Create the OpenAI client
-            services.AddScoped(provider => 
-                new OpenAIClient(
+            services.AddSingleton(provider => 
+                new AzureOpenAIClient(
                     new Uri(Configuration["OpenAIEndpoint"]),
                     new DefaultAzureCredential()
                 )

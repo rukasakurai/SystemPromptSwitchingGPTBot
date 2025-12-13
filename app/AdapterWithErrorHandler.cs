@@ -69,12 +69,20 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                     logger.LogError("Authentication error detected. Please verify MicrosoftAppId, MicrosoftAppPassword, and MicrosoftAppTenantId configuration.");
                 }
 
-                // Send a message to the user
-                await turnContext.SendActivityAsync(userMessage);
-                await turnContext.SendActivityAsync(detailMessage);
+                // Best-effort user notification. If sending fails (e.g., Conditional Access blocks token issuance),
+                // swallow the exception so the HTTP request can still complete.
+                try
+                {
+                    await turnContext.SendActivityAsync(userMessage);
+                    await turnContext.SendActivityAsync(detailMessage);
 
-                // Send a trace activity, which will be displayed in the Bot Framework Emulator
-                await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
+                    // Send a trace activity, which will be displayed in the Bot Framework Emulator
+                    await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
+                }
+                catch (System.Exception sendEx)
+                {
+                    logger.LogError(sendEx, "Failed to send error message/trace to the channel.");
+                }
             };
         }
     }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using OpenAI.Chat;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using _07JP27.SystemPromptSwitchingGPTBot.SystemPrompt;
@@ -19,17 +20,17 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
     public class GPTBot : ActivityHandler
     {
         private readonly IConfiguration _configuration;
-        private readonly OpenAIClient _openAIClient;
+        private readonly AzureOpenAIClient _azureOpenAIClient;
         private BotState _conversationState;
         private BotState _userState;
         private List<IGptConfiguration> _systemPrompts;
 
         private readonly ILogger<GPTBot> _logger;
 
-        public GPTBot(IConfiguration configuration, OpenAIClient openAIClient, ConversationState conversationState, UserState userState, List<IGptConfiguration> systemPrompts, ILogger<GPTBot> logger)
+        public GPTBot(IConfiguration configuration, AzureOpenAIClient azureOpenAIClient, ConversationState conversationState, UserState userState, List<IGptConfiguration> systemPrompts, ILogger<GPTBot> logger)
         {
             _configuration = configuration;
-            _openAIClient = openAIClient;
+            _azureOpenAIClient = azureOpenAIClient;
             _conversationState = conversationState;
             _userState = userState;
             _systemPrompts = systemPrompts;
@@ -107,23 +108,17 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             try
             {
                 // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
-                ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
+                ChatCompletion completion = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
-                if (response == null)
+                if (completion == null || completion.Content == null || completion.Content.Count == 0)
                 {
-                    _logger.LogError("OpenAI API returned null response");
+                    _logger.LogError("OpenAI API returned null or empty response");
                     await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);
                     return;
                 }
 
-                if (response.Choices == null || response.Choices.Count == 0)
-                {
-                    _logger.LogError("OpenAI API returned no choices in response");
-                    await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);
-                    return;
-                }
-
-                var replyText = response.Choices[0].Message.Content;
+                // Concatenate all content parts (usually only one, but robust for future changes)
+                var replyText = string.Join("", completion.Content.Select(part => part.Text));
                 await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
 
                 messages.Add(new GptMessage() { Role = "assistant", Content = replyText });
@@ -170,30 +165,32 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             }
         }
 
-        private async Task<ChatCompletions> generateMessage(List<GptMessage> messages, float temperature = 0.0f, int maxTokens = 500)
+        private async Task<ChatCompletion> generateMessage(List<GptMessage> messages, float temperature = 0.0f, int maxTokens = 500)
         {
-            var requestMessages = new List<ChatRequestMessage>();
+            var chatClient = _azureOpenAIClient.GetChatClient(_configuration["OpenAIDeployment"]);
+            var chatMessages = new List<ChatMessage>();
             foreach (var message in messages)
             {
                 switch (message.Role)
                 {
                     case "user":
-                        requestMessages.Add(new ChatRequestUserMessage(message.Content));
+                        chatMessages.Add(new UserChatMessage(message.Content));
                         break;
                     case "assistant":
-                        requestMessages.Add(new ChatRequestAssistantMessage(message.Content));
+                        chatMessages.Add(new AssistantChatMessage(message.Content));
                         break;
                     case "system":
-                        requestMessages.Add(new ChatRequestSystemMessage(message.Content));
+                        chatMessages.Add(new SystemChatMessage(message.Content));
                         break;
                 }
             }
-
-            var chatCompletionsOptions = new ChatCompletionsOptions(_configuration["OpenAIDeployment"], requestMessages);
-            chatCompletionsOptions.Temperature = temperature;
-            chatCompletionsOptions.MaxTokens = maxTokens;
-            Response<ChatCompletions> response = await _openAIClient.GetChatCompletionsAsync(chatCompletionsOptions);
-            return response.Value;
+            var options = new ChatCompletionOptions
+            {
+                Temperature = temperature,
+                MaxOutputTokenCount = maxTokens
+            };
+            ChatCompletion completion = await chatClient.CompleteChatAsync(chatMessages, options);
+            return completion;
         }
     }
 }

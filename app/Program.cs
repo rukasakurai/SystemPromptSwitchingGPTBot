@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace _07JP27.SystemPromptSwitchingGPTBot
 {
@@ -18,10 +20,22 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureLogging((logging) =>
+                    webBuilder.ConfigureServices(services =>
                     {
-                        logging.AddDebug();
+                        services.Configure<AzureFileLoggerOptions>(options =>
+                        {
+                            options.FileName = "application-";
+                            options.FileSizeLimit = 50 * 1024;
+                            options.RetainedFileCountLimit = 5;
+                        });
+                    });
+
+                    webBuilder.ConfigureLogging((context, logging) =>
+                    {
+                        logging.AddConfiguration(context.Configuration.GetSection("Logging"));
                         logging.AddConsole();
+                        logging.AddDebug();
+                        logging.AddAzureWebAppDiagnostics();
                     });
                     webBuilder.UseStartup<Startup>();
                 });
