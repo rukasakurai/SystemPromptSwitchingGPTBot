@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -17,11 +18,13 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
     {
         private readonly IBotFrameworkHttpAdapter _adapter;
         private readonly IBot _bot;
+        private readonly ILogger<BotController> _logger;
 
-        public BotController(IBotFrameworkHttpAdapter adapter, IBot bot)
+        public BotController(IBotFrameworkHttpAdapter adapter, IBot bot, ILogger<BotController> logger)
         {
             _adapter = adapter;
             _bot = bot;
+            _logger = logger;
         }
 
         [HttpPost, HttpGet]
@@ -29,7 +32,18 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
         {
             // Delegate the processing of the HTTP POST to the adapter.
             // The adapter will invoke the bot.
-            await _adapter.ProcessAsync(Request, Response, _bot);
+            try
+            {
+                await _adapter.ProcessAsync(Request, Response, _bot);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception while processing /api/messages. Returning 200 to avoid channel retries.");
+                if (!Response.HasStarted)
+                {
+                    Response.StatusCode = 200;
+                }
+            }
         }
     }
 }
