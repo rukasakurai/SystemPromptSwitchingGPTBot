@@ -36,23 +36,23 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                     {
                         logger.LogError("  Request Headers:");
                         // List of sensitive headers to redact
-                        var sensitiveHeaders = new[] { "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token", "Api-Key", "X-Access-Token" };
+                    logger.LogError("HttpOperationException details");
+                    logger.LogError("RequestUrl: {RequestUrl}", httpException.Request?.RequestUri?.ToString() ?? "N/A");
+                    logger.LogError("RequestMethod: {RequestMethod}", httpException.Request?.Method?.ToString() ?? "N/A");
+                    logger.LogError("StatusCode: {StatusCode}", httpException.Response?.StatusCode.ToString() ?? "N/A");
+                    logger.LogError("ResponseContent: {ResponseContent}", httpException.Response?.Content ?? "N/A");
+                    
+                    // Log request headers (credentials info)
+                    if (httpException.Request?.Headers != null)
+                    {
+                        logger.LogError("RequestHeaders present");
                         foreach (var header in httpException.Request.Headers)
                         {
-                            // Mask sensitive header values
-                            var isSensitive = false;
-                            foreach (var sensitiveHeader in sensitiveHeaders)
-                            {
-                                if (header.Key.Equals(sensitiveHeader, System.StringComparison.OrdinalIgnoreCase))
-                                {
-                                    isSensitive = true;
-                                    break;
-                                }
-                            }
-                            var headerValue = isSensitive
-                                ? "[REDACTED]"
+                            // Mask sensitive authorization header values
+                            var headerValue = header.Key.Equals("Authorization", System.StringComparison.OrdinalIgnoreCase) 
+                                ? "[REDACTED]" 
                                 : string.Join(", ", header.Value);
-                            logger.LogError("    {HeaderKey}: {HeaderValue}", header.Key, headerValue);
+                            logger.LogError("HeaderKey: {HeaderKey}, HeaderValue: {HeaderValue}", header.Key, headerValue);
                         }
                     }
                 }
