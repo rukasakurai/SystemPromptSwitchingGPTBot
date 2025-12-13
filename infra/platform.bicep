@@ -1,8 +1,8 @@
 param resourceToken string
 param location string
 
-@description('The version of the GPT-3.5-turbo model to deploy')
-param gptModelVersion string = '0125'
+@description('The version of the GPT-4o model to deploy')
+param gptModelVersion string = '2024-08-06'
 
 // Azure OpenAI Service
 resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
@@ -17,11 +17,11 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
 // Azure OpenAI Model Deployment
 resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   parent: openAiService
-  name: 'gpt-35-turbo'
+  name: 'gpt-4o'
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-35-turbo'
+      name: 'gpt-4o'
       version: gptModelVersion
     }
   }
