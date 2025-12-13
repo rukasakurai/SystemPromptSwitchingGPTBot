@@ -58,7 +58,13 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 {
                     var resetMessage = "会話履歴をクリアしました。";
                     await turnContext.SendActivityAsync(MessageFactory.Text(resetMessage, resetMessage), cancellationToken);
-                    var currentMode = _systemPrompts.FirstOrDefault(x => x.Id == conversationData.CurrentConfigId);
+                    var currentMode = _systemPrompts.FirstOrDefault(x => x.Id == conversationData.CurrentConfigId) 
+                                      ?? _systemPrompts.FirstOrDefault(x => x.Id == "default");
+                    if (currentMode == null)
+                    {
+                        _logger.LogError("Failed to find current mode or default mode for clear command");
+                        return;
+                    }
                     conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentMode.SystemPrompt } };
                     return;
                 }
@@ -89,13 +95,13 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 userProfile.Name = userNameFronContext;
             }
 
-            var currentConfing = _systemPrompts.FirstOrDefault(x => x.Id == (conversationData.CurrentConfigId != null ? conversationData.CurrentConfigId : "default"));
+            var currentConfig = _systemPrompts.FirstOrDefault(x => x.Id == (conversationData.CurrentConfigId != null ? conversationData.CurrentConfigId : "default"));
 
             // Ensure we have a valid configuration
-            if (currentConfing == null)
+            if (currentConfig == null)
             {
-                currentConfing = _systemPrompts.FirstOrDefault(x => x.Id == "default");
-                if (currentConfing == null)
+                currentConfig = _systemPrompts.FirstOrDefault(x => x.Id == "default");
+                if (currentConfig == null)
                 {
                     var errorMessage = "システムプロンプトの設定が見つかりませんでした。";
                     await turnContext.SendActivityAsync(MessageFactory.Text(errorMessage, errorMessage), cancellationToken);
@@ -105,9 +111,9 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
 
             if (String.IsNullOrEmpty(conversationData.CurrentConfigId))
             {
-                conversationData.CurrentConfigId = currentConfing.Id;
-                conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfing.SystemPrompt } };
-                _logger.LogInformation("Initialized new conversation with config: {configId}", currentConfing.Id);
+                conversationData.CurrentConfigId = currentConfig.Id;
+                conversationData.Messages = new() { new GptMessage() { Role = "system", Content = currentConfig.SystemPrompt } };
+                _logger.LogInformation("Initialized new conversation with config: {configId}", currentConfig.Id);
             }
 
             List<GptMessage> messages = new();
@@ -121,8 +127,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
             // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
             try
             {
-                _logger.LogInformation("Calling Azure OpenAI with {messageCount} messages, config: {configId}", messages.Count, currentConfing.Id);
-                ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
+                _logger.LogInformation("Calling Azure OpenAI with {messageCount} messages, config: {configId}", messages.Count, currentConfig.Id);
+                ChatCompletions response = await generateMessage(messages, currentConfig.Temperature, currentConfig.MaxTokens);
 
                 if (response == null || response.Choices == null || response.Choices.Count == 0)
                 {
