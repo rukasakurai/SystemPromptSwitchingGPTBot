@@ -1,7 +1,7 @@
 param resourceToken string
 param location string
 param appServicePlanId string
-param appInsightsInstrumentationKey string
+param appInsightsConnectionString string
 
 // Azure Web App
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
@@ -42,7 +42,7 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
   parent: webApp
   name: 'appsettings'
   properties: {
-    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     // Add any other required app settings below
   }
 }
