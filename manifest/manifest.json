@@ -1,6 +1,6 @@
 {
     "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.21/MicrosoftTeams.schema.json",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "manifestVersion": "1.21",
     "id": "4c7f0ce4-127b-442e-9e34-9a58bb25ccbc",
     "name": {
@@ -39,7 +39,7 @@
     ],
     "bots": [
         {
-            "botId": "4c7f0ce4-127b-442e-9e34-9a58bb25ccbc",
+            "botId": "57790154-28e4-41fb-9f7b-927e218a87e7",
             "scopes": [
                 "personal",
                 "groupChat",
@@ -89,7 +89,7 @@
     "copilotAgents": {
         "customEngineAgents": [
             {
-                "id": "4c7f0ce4-127b-442e-9e34-9a58bb25ccbc",
+                "id": "57790154-28e4-41fb-9f7b-927e218a87e7",
                 "type": "bot"
             }
         ]
