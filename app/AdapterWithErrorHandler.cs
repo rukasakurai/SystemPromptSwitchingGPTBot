@@ -25,17 +25,6 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                 // Check for ErrorResponseException to log detailed authentication information
                 if (exception is HttpOperationException httpException)
                 {
-                    logger.LogError("HttpOperationException details:");
-                    logger.LogError("  Request URL: {RequestUrl}", httpException.Request?.RequestUri?.ToString() ?? "N/A");
-                    logger.LogError("  Request Method: {RequestMethod}", httpException.Request?.Method?.ToString() ?? "N/A");
-                    logger.LogError("  Response Status Code: {StatusCode}", httpException.Response?.StatusCode.ToString() ?? "N/A");
-                    logger.LogError("  Response Content: {ResponseContent}", httpException.Response?.Content ?? "N/A");
-                    
-                    // Log request headers (credentials info)
-                    if (httpException.Request?.Headers != null)
-                    {
-                        logger.LogError("  Request Headers:");
-                        // List of sensitive headers to redact
                     logger.LogError("HttpOperationException details");
                     logger.LogError("RequestUrl: {RequestUrl}", httpException.Request?.RequestUri?.ToString() ?? "N/A");
                     logger.LogError("RequestMethod: {RequestMethod}", httpException.Request?.Method?.ToString() ?? "N/A");
@@ -46,11 +35,21 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                     if (httpException.Request?.Headers != null)
                     {
                         logger.LogError("RequestHeaders present");
+                        var sensitiveHeaders = new[] { "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token", "Api-Key", "X-Access-Token" };
                         foreach (var header in httpException.Request.Headers)
                         {
-                            // Mask sensitive authorization header values
-                            var headerValue = header.Key.Equals("Authorization", System.StringComparison.OrdinalIgnoreCase) 
-                                ? "[REDACTED]" 
+                            // Mask sensitive header values
+                            var isSensitive = false;
+                            foreach (var sensitiveHeader in sensitiveHeaders)
+                            {
+                                if (header.Key.Equals(sensitiveHeader, System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    isSensitive = true;
+                                    break;
+                                }
+                            }
+                            var headerValue = isSensitive
+                                ? "[REDACTED]"
                                 : string.Join(", ", header.Value);
                             logger.LogError("HeaderKey: {HeaderKey}, HeaderValue: {HeaderValue}", header.Key, headerValue);
                         }
@@ -58,8 +57,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                 }
 
                 // Check for common authentication issues and provide helpful messages
-                string userMessage = "The bot encountered an error or bug.";
-                string detailMessage = "To continue to run this bot, please fix the bot source code.";
+                string userMessage = "ボットでエラーまたはバグが発生しました。";
+                string detailMessage = "このボットを継続して実行するには、ボットのソースコードを修正してください。";
                 
                 if (exception.Message.Contains("Unauthorized", System.StringComparison.OrdinalIgnoreCase) || 
                     exception.Message.Contains("401", System.StringComparison.OrdinalIgnoreCase) ||
