@@ -5,6 +5,24 @@ param appInsightsConnectionString string
 param openAiEndpoint string
 param openAiDeploymentName string
 
+@description('Bot Framework app type. Use SingleTenant to avoid deprecated MultiTenant bots.')
+@allowed([
+  'SingleTenant'
+  'MultiTenant'
+  'UserAssignedMSI'
+])
+param microsoftAppType string = 'SingleTenant'
+
+@description('Microsoft App ID for the bot: the Entra app registration Application (client) ID that represents the bot identity. This must match the Bot Service "Microsoft App ID".')
+param microsoftAppId string
+
+@secure()
+@description('Microsoft App password (client secret) for the Bot/Entra app registration.')
+param microsoftAppPassword string
+
+@description('Microsoft Entra tenant ID for the Bot app registration.')
+param microsoftAppTenantId string = subscription().tenantId
+
 // Azure Web App
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   name: 'web-${resourceToken}'
@@ -36,8 +54,9 @@ resource botService 'Microsoft.BotService/botServices@2022-09-15' = {
   properties: {
     displayName: 'bot-${resourceToken}'
     endpoint: 'https://${webApp.properties.defaultHostName}/api/messages'
-    msaAppId: guid(subscription().id, resourceGroup().id, 'bot', resourceToken)
-    msaAppType: 'MultiTenant' // Should maybe make this Single Tenant later
+    msaAppId: microsoftAppId
+    msaAppType: microsoftAppType
+    msaAppTenantId: microsoftAppTenantId
   }
 }
 
@@ -49,6 +68,10 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
   name: 'appsettings'
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    MicrosoftAppType: microsoftAppType
+    MicrosoftAppId: microsoftAppId
+    MicrosoftAppPassword: microsoftAppPassword
+    MicrosoftAppTenantId: microsoftAppTenantId
     OpenAIEndpoint: openAiEndpoint
     OpenAIDeployment: openAiDeploymentName
     // Add any other required app settings below
@@ -70,3 +93,4 @@ output webAppName string = webApp.name
 output webAppHostName string = webApp.properties.defaultHostName
 output webAppPrincipalId string = webApp.identity.principalId
 output botServiceName string = botService.name
+output botMicrosoftAppId string = microsoftAppId
