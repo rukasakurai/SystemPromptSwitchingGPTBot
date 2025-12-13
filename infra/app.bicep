@@ -26,7 +26,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
 // the corresponding Microsoft App Registration in Azure AD. You must manually create
 // an app registration with this ID in Azure AD before the bot can authenticate.
 // Alternatively, consider parameterizing msaAppId and msaAppTenantId to use an existing app registration.
-resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
+resource botService 'Microsoft.BotService/botServices@2022-09-15' = {
   name: 'bot-${resourceToken}'
   location: 'global'
   kind: 'azurebot'
