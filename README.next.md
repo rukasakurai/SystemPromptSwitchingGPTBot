@@ -12,6 +12,6 @@
 - Deploy the app: `azd deploy`
 - In Azure Bot resource: enable **Teams** channel
 - Teams app package:
-  - Edit `manifest/manifest.json` values (at minimum, set the bot ID to the deployed bot's Microsoft App ID).
+  - Edit `manifest/manifest.json` values (at minimum, set `bots[0].botId` (and `copilotAgents.customEngineAgents[0].id` if present) to the deployed bot's Microsoft App ID).
   - Zip **only** `manifest.json`, `color.png`, `outline.png` (no parent folder).
   - Upload/install in Teams (personal sideloading or org admin upload).
