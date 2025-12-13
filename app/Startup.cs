@@ -72,9 +72,23 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                     logger.LogError("OpenAIDeployment configuration is missing or empty");
                 }
                 
+                // Configure DefaultAzureCredential with logging
+                var credentialOptions = new DefaultAzureCredentialOptions
+                {
+                    // Enable logging for authentication attempts
+                    Diagnostics = 
+                    {
+                        IsLoggingEnabled = true,
+                        LoggedHeaderNames = { "x-ms-request-id" },
+                        LoggedQueryParameters = { "api-version" }
+                    }
+                };
+                
+                logger.LogInformation("Creating DefaultAzureCredential for Managed Identity authentication");
+                
                 return new OpenAIClient(
                     new Uri(endpoint),
-                    new DefaultAzureCredential()
+                    new DefaultAzureCredential(credentialOptions)
                 );
             });
 
