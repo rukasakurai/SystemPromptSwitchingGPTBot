@@ -4,7 +4,7 @@
 - Sign in: `az login`.
 - Create Bot identity (Entra app registration): **Single-tenant** app + **client secret**.
 - Provision Azure resources: `azd provision`.
-- Deploy the app
+- Deploy the app: `azd deploy`.
 - In Azure Bot resource: enable **Teams** channel.
 - Teams app package:
   - Edit `manifest/manifest.json` placeholders.
