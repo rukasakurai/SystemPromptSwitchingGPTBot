@@ -21,7 +21,9 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   }
 }
 
-var openAiEndpoint = 'https://${openAiService.name}.openai.azure.com/'
+// Use the endpoint emitted by the resource provider.
+// In some configurations this is a regional Cognitive Services endpoint rather than a {name}.openai.azure.com hostname.
+var openAiEndpoint = openAiService.properties.endpoint
 
 // Azure OpenAI Model Deployment
 resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-01' = {
