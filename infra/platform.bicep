@@ -29,7 +29,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-0
 }
 
 // Log Analytics workspace
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'log-${resourceToken}'
   location: location
 }
