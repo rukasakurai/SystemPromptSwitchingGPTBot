@@ -17,11 +17,24 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: location
 }
 
-module openAi 'therest.bicep' = {
-  name: 'openai'
+// Deploy platform resources (reusable across use cases)
+module platform 'platform.bicep' = {
+  name: 'platform'
   scope: resourceGroup
   params: {
     resourceToken: resourceToken
     location: location
+  }
+}
+
+// Deploy use case specific resources (Bot and Web App)
+module usecase 'usecase.bicep' = {
+  name: 'usecase'
+  scope: resourceGroup
+  params: {
+    resourceToken: resourceToken
+    location: location
+    appServicePlanId: platform.outputs.appServicePlanId
+    appInsightsInstrumentationKey: platform.outputs.appInsightsInstrumentationKey
   }
 }
