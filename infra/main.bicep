@@ -35,6 +35,6 @@ module app 'app.bicep' = {
     resourceToken: resourceToken
     location: location
     appServicePlanId: platform.outputs.appServicePlanId
-    appInsightsInstrumentationKey: platform.outputs.appInsightsInstrumentationKey
+    appInsightsConnectionString: platform.outputs.appInsightsConnectionString
   }
 }
