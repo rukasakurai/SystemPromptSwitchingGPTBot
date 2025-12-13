@@ -2,7 +2,7 @@ param resourceToken string
 param location string
 
 @description('The version of the GPT-3.5-turbo model to deploy')
-param gptModelVersion string = '0613'
+param gptModelVersion string = '0125'
 
 // Azure OpenAI Service
 resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
