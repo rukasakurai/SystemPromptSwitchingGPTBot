@@ -35,11 +35,22 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                     if (httpException.Request?.Headers != null)
                     {
                         logger.LogError("  Request Headers:");
+                        // List of sensitive headers to redact
+                        var sensitiveHeaders = new[] { "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token", "Api-Key", "X-Access-Token" };
                         foreach (var header in httpException.Request.Headers)
                         {
-                            // Mask sensitive authorization header values
-                            var headerValue = header.Key.Equals("Authorization", System.StringComparison.OrdinalIgnoreCase) 
-                                ? "[REDACTED]" 
+                            // Mask sensitive header values
+                            var isSensitive = false;
+                            foreach (var sensitiveHeader in sensitiveHeaders)
+                            {
+                                if (header.Key.Equals(sensitiveHeader, System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    isSensitive = true;
+                                    break;
+                                }
+                            }
+                            var headerValue = isSensitive
+                                ? "[REDACTED]"
                                 : string.Join(", ", header.Value);
                             logger.LogError("    {HeaderKey}: {HeaderValue}", header.Key, headerValue);
                         }
