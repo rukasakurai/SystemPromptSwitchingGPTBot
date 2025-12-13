@@ -109,7 +109,14 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Bots
                 // TODO:会話履歴がトークン上限を超えないことを事前に確認して、超えるようなら直近n件のみ送るようにする
                 ChatCompletions response = await generateMessage(messages, currentConfing.Temperature, currentConfing.MaxTokens);
 
-                if (response?.Choices == null || response.Choices.Count == 0)
+                if (response == null)
+                {
+                    _logger.LogError("OpenAI API returned null response");
+                    await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);
+                    return;
+                }
+
+                if (response.Choices == null || response.Choices.Count == 0)
                 {
                     _logger.LogError("OpenAI API returned no choices in response");
                     await turnContext.SendActivityAsync(MessageFactory.Text("申し訳ございません。応答の生成中にエラーが発生しました。", "申し訳ございません。応答の生成中にエラーが発生しました。"), cancellationToken);

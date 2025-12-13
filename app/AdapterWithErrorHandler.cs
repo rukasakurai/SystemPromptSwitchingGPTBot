@@ -25,8 +25,8 @@ namespace _07JP27.SystemPromptSwitchingGPTBot
                 string userMessage = "The bot encountered an error or bug.";
                 string detailMessage = "To continue to run this bot, please fix the bot source code.";
                 
-                if (exception.Message.Contains("Unauthorized") || 
-                    exception.Message.Contains("401") ||
+                if (exception.Message.Contains("Unauthorized", System.StringComparison.OrdinalIgnoreCase) || 
+                    exception.Message.Contains("401", System.StringComparison.OrdinalIgnoreCase) ||
                     exception.Message.Contains("authentication", System.StringComparison.OrdinalIgnoreCase))
                 {
                     userMessage = "認証エラーが発生しました。ボットの設定を確認してください。";
