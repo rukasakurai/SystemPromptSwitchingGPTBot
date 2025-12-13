@@ -111,7 +111,7 @@ For a sequence diagram representing a typical user scenario of using this app, p
 
 **最も一般的な原因：Bot Framework のアプリ登録 (App Registration) が削除された、または期限切れ**
 
-Application Insights の Application Map で `login.microsoftonline.com` への呼び出しが失敗している場合は、アプリ登録の問題です。
+Application Insights の Application Map で `login.microsoftonline.com` への呼び出しが失敗している（"Unauthorized" エラー）場合は、アプリ登録の問題です。
 
 #### 確認方法
 
@@ -119,6 +119,75 @@ Application Insights の Application Map で `login.microsoftonline.com` への�
 2. `MicrosoftAppId`（Azure Web Apps の設定値）で検索
 3. **アプリが見つからない場合**：削除されています
    - 削除から 30 日以内であれば「削除されたアプリケーション」タブから復元可能
-   - または Azure Bot から新しいアプリ登録を作成し、Web Apps の設定を更新
+   - 30 日以上経過している場合は、以下の「アプリ登録が完全に削除された場合の復旧手順」を参照してください
 4. **アプリが見つかった場合**：「証明書とシークレット」でクライアントシークレットの有効期限を確認
    - 期限切れの場合は新しいシークレットを作成し、Web Apps の `MicrosoftAppPassword` を更新
+
+#### アプリ登録が完全に削除された場合の復旧手順
+
+アプリ登録が完全に削除されている場合は、新しい Azure Bot Service とアプリ登録を作成し、すべての設定を更新する必要があります。
+
+##### 1. 新しい Azure Bot Service の作成
+
+1. Azure ポータルで Azure Bot リソースを作成します
+   - データ所在地：「グローバル」
+   - 価格レベル：「Standard」
+   - アプリの種類：「シングルテナント」
+   - 作成の種類：「新しい Microsoft アプリ ID の作成」
+2. デプロイ完了後、「構成」メニューから以下の情報をメモします：
+   - **Microsoft App ID**（新しい GUID）
+   - **アプリ テナント ID**
+3. Microsoft App ID の横の「パスワードの管理」をクリックして Entra ID のアプリ登録画面へ遷移します
+4. 「新しいクライアントシークレット」を作成し、**値**をメモします（この値は作成直後しか表示されません）
+
+##### 2. Azure Web Apps の設定更新
+
+Azure Web Apps の「構成」→「アプリケーション設定」で以下の値を**更新**します：
+
+- `MicrosoftAppId`：新しい Microsoft App ID
+- `MicrosoftAppPassword`：新しいクライアントシークレットの値
+- `MicrosoftAppTenantId`：新しいアプリ テナント ID
+
+**重要**：設定更新後、必ず「保存」をクリックして変更を反映してください。
+
+##### 3. Azure Bot のエンドポイント設定
+
+1. Azure Bot の「構成」画面で「メッセージングエンドポイント」を確認・設定します
+   - URL: `{Web Apps の URL}/api/messages`（例：https://xxxx.azurewebsites.net/api/messages）
+2. 「チャンネル」画面から Teams チャンネルを有効化します
+
+##### 4. Teams マニフェストの更新
+
+1. `manifest/manifest.json` を開きます
+2. 以下の箇所を新しい Microsoft App ID で更新します：
+   ```json
+   "id": "新しい Microsoft App ID",
+   "bots": [
+       {
+           "botId": "新しい Microsoft App ID",
+           ...
+       }
+   ],
+   "copilotAgents": {
+       "customEngineAgents": [
+           {
+               "id": "新しい Microsoft App ID",
+               ...
+           }
+       ]
+   }
+   ```
+3. `manifest.json`、`color.png`、`outline.png` を ZIP 圧縮します
+   - **注意**：3 つのファイルを直接圧縮してください（フォルダごと圧縮しないこと）
+
+##### 5. Teams への再アップロード
+
+1. Teams で既存のボットアプリをアンインストールします（必要に応じて）
+2. Teams の「アプリ」→「アプリを管理」→「アプリをアップロード」から新しい ZIP ファイルをアップロードします
+3. ボットとの会話を開始して、正常に応答することを確認します
+
+##### 6. 動作確認
+
+- Teams でボットにメッセージを送信して応答を確認します
+- Application Insights の Application Map でエラーが発生していないことを確認します
+- 各種コマンド（`/default`、`/clear` など）が正常に動作することを確認します
