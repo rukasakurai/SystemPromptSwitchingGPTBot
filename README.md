@@ -104,3 +104,21 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 ### Sequence Diagram
 
 For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
+
+## トラブルシューティング
+
+### ボットが応答しない場合
+
+**最も一般的な原因：Bot Framework のアプリ登録 (App Registration) が削除された、または期限切れ**
+
+Application Insights の Application Map で `login.microsoftonline.com` への呼び出しが失敗している場合は、アプリ登録の問題です。
+
+#### 確認方法
+
+1. Azure ポータル → Microsoft Entra ID → アプリの登録
+2. `MicrosoftAppId`（Azure Web Apps の設定値）で検索
+3. **アプリが見つからない場合**：削除されています
+   - 削除から 30 日以内であれば「削除されたアプリケーション」タブから復元可能
+   - または Azure Bot から新しいアプリ登録を作成し、Web Apps の設定を更新
+4. **アプリが見つかった場合**：「証明書とシークレット」でクライアントシークレットの有効期限を確認
+   - 期限切れの場合は新しいシークレットを作成し、Web Apps の `MicrosoftAppPassword` を更新
