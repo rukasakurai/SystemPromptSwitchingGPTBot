@@ -14,8 +14,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlanId
     siteConfig: {
-      netFrameworkVersion: 'v8.0'
-      windowsFxVersion: 'dotnet:8'
+      windowsFxVersion: 'DOTNETCORE|8.0'
     }
   }
 }
