@@ -1,0 +1,55 @@
+name: Bicep Validation
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  pull_request:
+    paths:
+      - "infra/**/*.bicep"
+      - "infra/**/*.json"
+      - ".github/workflows/bicep-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bicep CLI
+        run: |
+          # Install Bicep CLI
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+          bicep --version
+      
+      - name: Build and validate Bicep files
+        run: |
+          echo "Building and validating Bicep files..."
+          cd infra
+          
+          # Build each bicep file to validate syntax
+          for file in *.bicep; do
+            echo "Validating $file..."
+            bicep build "$file"
+            if [ $? -eq 0 ]; then
+              echo "✓ $file is valid"
+            else
+              echo "✗ $file validation failed"
+              exit 1
+            fi
+          done
+          
+          echo "All Bicep files validated successfully!"
+      
+      - name: Clean up generated files
+        if: always()
+        run: |
+          cd infra
+          # Remove generated JSON files (except parameters)
+          rm -f main.json platform.json app.json role.json
