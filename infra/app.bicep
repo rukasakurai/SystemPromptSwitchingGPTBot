@@ -24,7 +24,7 @@ param microsoftAppPassword string
 param microsoftAppTenantId string = subscription().tenantId
 
 // Azure Web App
-resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+resource webApp 'Microsoft.Web/sites@2025-03-01' = {
   name: 'web-${resourceToken}'
   location: location
   tags: { 'azd-service-name': 'backend' }
@@ -63,7 +63,7 @@ resource botService 'Microsoft.BotService/botServices@2022-09-15' = {
 // Add Application Insights and Azure OpenAI configuration to App Settings
 // WARNING: This block overwrites all existing app settings on the web app.
 // Be sure to include ALL required app settings here, as any not listed will be removed.
-resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
+resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: webApp
   name: 'appsettings'
   properties: {

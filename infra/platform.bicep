@@ -5,7 +5,7 @@ param location string
 param gptModelVersion string = '2024-08-06'
 
 // Azure OpenAI Service
-resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   name: 'oai-${resourceToken}'
   location: location
   kind: 'OpenAI'
@@ -17,7 +17,7 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
 var openAiEndpoint = 'https://${openAiService.name}.openai.azure.com/'
 
 // Azure OpenAI Model Deployment
-resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-01' = {
   parent: openAiService
   name: 'gpt-4o'
   properties: {
@@ -34,7 +34,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2023-05-0
 }
 
 // Log Analytics workspace
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: 'log-${resourceToken}'
   location: location
 }
@@ -51,7 +51,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // Azure App Service Plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: 'plan-${resourceToken}'
   location: location
   sku: {

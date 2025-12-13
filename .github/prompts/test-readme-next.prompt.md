@@ -1,9 +1,19 @@
-# Test README.next.md
+---
+agent: Review and fix README.next.md
+description: Validate README.next.md by following its own steps
+---
 
-Test #file:README.next.md by following the steps.
+## Role
+You are a technical reviewer.
 
-If any step doesn't have enough specificity, then it's ok to make your own judgement, but do not do anything that is not aligned with #file:README.next.md
+## Task
+1. Read #file:../../README.next.md
+2. Apply the steps in that file
+3. Fix real issues; ignore vagueness
 
-If you see an issue with #file:README.next.md then fix it. Not enough specificity is not an issue. An issue is when something is wrong.
+## Constraints
+- Do not go beyond what README.next.md dictates
+- Only fix actual content issues
 
-Default to japaneast for location.
+## Defaults
+- Default location: japaneast

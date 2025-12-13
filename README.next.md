@@ -4,6 +4,7 @@
 - Sign in: `az login`
 - Create/select an `azd` environment:
   - `azd env new <envName>` (or `azd env select <envName>`)
+- Set location (default): `azd env set AZURE_LOCATION japaneast`
 - Create bot identity (Entra app registration + client secret):
   - `pwsh -File ./infra/hooks/preprovision.ps1`
 - Provision Azure resources: `azd provision`
