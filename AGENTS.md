@@ -5,9 +5,10 @@ This document establishes the contract between this repository and AI agents. It
 ## 1. Canonical Execution Environment
 
 ### Reference Platforms
-- **Primary OS**: Linux (Ubuntu latest in CI)
-- **Secondary OS**: Windows (for local development and CI)
-- **Shells**: bash (Linux), PowerShell/pwsh (Windows)
+- **Supported OS**: Windows and Linux (both used in CI and local development)
+  - CI: Windows (for .NET tests), Linux (for Bicep validation)
+  - Local: Both Windows and Linux are fully supported for development
+- **Shells**: PowerShell/pwsh (Windows), bash (Linux)
 - **.NET Version**: 8.0 (with forward compatibility to .NET 10 for tests)
 
 ### CI Parity
