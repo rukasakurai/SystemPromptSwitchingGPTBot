@@ -131,7 +131,7 @@ done
 ### Identity Types by Use Case
 - **Bot Framework identity**: App Registration with client secret (for Bot ↔ Bot Service auth)
   - Config: `MicrosoftAppId`, `MicrosoftAppPassword`, `MicrosoftAppTenantId`
-  - Type: `SingleTenant` (preferred over deprecated `MultiTenant`)
+  - Type: `SingleTenant` (recommended for single-tenant scenarios; `MultiTenant` is still valid for cross-tenant scenarios)
 - **Web App to Azure OpenAI**: Managed Identity (system-assigned, passwordless)
   - Web App's identity gets RBAC on OpenAI resource
   - Uses `DefaultAzureCredential` in code
