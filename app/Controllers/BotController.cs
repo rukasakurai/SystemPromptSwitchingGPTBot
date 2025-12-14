@@ -52,14 +52,14 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
             catch (AggregateException ex)
             {
                 // Check if this is an authentication failure (e.g., MSAL token acquisition failure)
-                bool isAuthenticationError = false;
+                bool containsAuthError = false;
                 Exception firstAuthException = null;
                 
                 foreach (var innerEx in ex.InnerExceptions)
                 {
                     if (IsAuthenticationException(innerEx))
                     {
-                        isAuthenticationError = true;
+                        containsAuthError = true;
                         if (firstAuthException == null)
                         {
                             firstAuthException = innerEx;
@@ -67,7 +67,7 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                     }
                 }
 
-                if (isAuthenticationError)
+                if (containsAuthError)
                 {
                     // Log detailed authentication error information once
                     _logger.LogWarning(firstAuthException, 
