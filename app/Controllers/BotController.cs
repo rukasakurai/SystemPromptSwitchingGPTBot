@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,56 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                 if (!Response.HasStarted)
                 {
                     Response.StatusCode = 200;
+                }
+            }
+            catch (AggregateException ex)
+            {
+                // Check if this is an authentication failure (e.g., MSAL token acquisition failure)
+                bool isAuthenticationError = false;
+                foreach (var innerEx in ex.InnerExceptions)
+                {
+                    var message = innerEx.Message;
+                    // Check for common authentication error codes
+                    if (message.Contains("AADSTS", StringComparison.OrdinalIgnoreCase) ||
+                        message.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+                        message.Contains("Conditional Access", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isAuthenticationError = true;
+                        
+                        // Log detailed authentication error information
+                        _logger.LogWarning(innerEx, 
+                            "Authentication error during token acquisition. " +
+                            "Error: {ErrorMessage}. " +
+                            "This may be due to Conditional Access policies or other authentication restrictions. " +
+                            "Returning 200 to avoid channel retries.",
+                            message);
+                        
+                        // Try to extract and log trace/correlation IDs if present
+                        if (message.Contains("Trace ID:", StringComparison.OrdinalIgnoreCase) ||
+                            message.Contains("Correlation ID:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogWarning("Full error details: {FullMessage}", message);
+                        }
+                    }
+                }
+
+                if (isAuthenticationError)
+                {
+                    // Return 200 to prevent channel retries for authentication issues
+                    _logger.LogWarning("Authentication-related AggregateException caught. Returning 200 to avoid channel retries.");
+                    if (!Response.HasStarted)
+                    {
+                        Response.StatusCode = 200;
+                    }
+                }
+                else
+                {
+                    // Non-authentication aggregate exception - log and return 500
+                    _logger.LogError(ex, "Non-authentication AggregateException while processing /api/messages.");
+                    if (!Response.HasStarted)
+                    {
+                        Response.StatusCode = 500;
+                    }
                 }
             }
             catch (System.Exception ex)
