@@ -29,7 +29,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
           cache: true
-          cache-dependency-path: app/*.csproj
+          cache-dependency-path: app/SystemPromptSwitchingGPTBot.csproj
       
       - name: Install Azure CLI
         run: |
@@ -61,21 +61,16 @@ jobs:
           azd env set microsoftAppId ${{ secrets.STAGING_BOT_APP_ID }}
           azd env set microsoftAppPassword ${{ secrets.STAGING_BOT_APP_PASSWORD }}
           azd env set microsoftAppTenantId ${{ secrets.AZURE_TENANT_ID }}
-        working-directory: /home/runner/work/SystemPromptSwitchingGPTBot/SystemPromptSwitchingGPTBot
       
       - name: Provision infrastructure
-        run: |
-          azd provision --no-prompt
-        working-directory: /home/runner/work/SystemPromptSwitchingGPTBot/SystemPromptSwitchingGPTBot
+        run: azd provision --no-prompt
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_STAGING }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Deploy application
-        run: |
-          azd deploy --no-prompt
-        working-directory: /home/runner/work/SystemPromptSwitchingGPTBot/SystemPromptSwitchingGPTBot
+        run: azd deploy --no-prompt
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_STAGING }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -84,11 +79,10 @@ jobs:
       - name: Get deployment outputs
         id: outputs
         run: |
-          WEB_APP_HOSTNAME=$(azd env get-values | grep AZURE_APP_SERVICE_HOSTNAME || echo "")
+          WEB_APP_HOSTNAME=$(azd env get-values | grep AZURE_APP_SERVICE_HOSTNAME | cut -d= -f2 || echo "")
           if [ -n "$WEB_APP_HOSTNAME" ]; then
-            echo "webapp-url=https://${WEB_APP_HOSTNAME#*=}" >> $GITHUB_OUTPUT
+            echo "webapp-url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
           fi
-        working-directory: /home/runner/work/SystemPromptSwitchingGPTBot/SystemPromptSwitchingGPTBot
       
       - name: Health check (optional)
         if: steps.outputs.outputs.webapp-url != ''
