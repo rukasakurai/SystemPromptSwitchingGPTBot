@@ -68,23 +68,15 @@ jobs:
       
       - name: Provision infrastructure
         run: azd provision --no-prompt
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_STAGING }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Deploy application
         run: azd deploy --no-prompt
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_STAGING }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Get deployment outputs
         id: outputs
         run: |
-          # azd converts output 'webAppHostName' to environment variable
-          WEB_APP_HOSTNAME=$(azd env get-values | grep -i "HOSTNAME\|HOST_NAME" | cut -d= -f2 | head -1 || echo "")
+          # azd converts Bicep output 'webAppHostName' to environment variable 'WEBAPPHOSTNAME'
+          WEB_APP_HOSTNAME=$(azd env get-values | grep "^WEBAPPHOSTNAME=" | cut -d= -f2)
           if [ -n "$WEB_APP_HOSTNAME" ]; then
             echo "webapp-url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
             echo "Staging bot will be available at: https://${WEB_APP_HOSTNAME}/api/messages"

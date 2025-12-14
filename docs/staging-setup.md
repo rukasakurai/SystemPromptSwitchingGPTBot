@@ -17,7 +17,15 @@ The staging environment is automatically deployed via GitHub Actions whenever co
 
 ### Step 1: Create Bot Identity for Staging
 
-The staging environment needs its own bot identity (Entra app registration) separate from production. Run the preprovision script to create one:
+The staging environment can either use the same bot identity as production or have its own separate identity.
+
+**Option A: Use the same bot identity as production (simpler)**
+
+If you want staging to use the same bot identity as production, you can use the existing `microsoftAppId` and `microsoftAppPassword` values from your production bot.
+
+**Option B: Create a separate bot identity for staging (isolated)**
+
+If you want complete isolation, run the preprovision script to create a new Entra app registration for staging:
 
 ```bash
 # Set the environment name for staging
@@ -72,30 +80,9 @@ az ad app federated-credential create \
   }'
 ```
 
-### Step 3: Configure GitHub Secrets
+### Step 3: Create GitHub Environment
 
-Set the following secrets in your GitHub repository (Settings → Secrets and variables → Actions):
-
-**Staging OIDC credentials:**
-- `AZURE_CLIENT_ID_STAGING`: Client ID from Step 2
-- `AZURE_TENANT_ID`: Your Azure tenant ID (same for all environments)
-- `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (same for all environments)
-
-**Staging bot identity (from Step 1):**
-- `STAGING_BOT_APP_ID`: microsoftAppId value
-- `STAGING_BOT_APP_PASSWORD`: microsoftAppPassword value
-
-You can set secrets using the GitHub CLI:
-
-```bash
-gh secret set AZURE_CLIENT_ID_STAGING --body "<client-id>"
-gh secret set AZURE_TENANT_ID --body "<tenant-id>"
-gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
-gh secret set STAGING_BOT_APP_ID --body "<bot-app-id>"
-gh secret set STAGING_BOT_APP_PASSWORD --body "<bot-app-password>"
-```
-
-### Step 4: Create GitHub Environment
+First, create the GitHub environment that will be used for staging deployments:
 
 1. Go to your repository on GitHub
 2. Navigate to Settings → Environments
@@ -103,7 +90,41 @@ gh secret set STAGING_BOT_APP_PASSWORD --body "<bot-app-password>"
 4. Name it **exactly** `staging` (must match workflow configuration)
 5. Optionally configure protection rules (e.g., require approval)
 
+### Step 4: Configure GitHub Secrets
+
+Set the following secrets in your GitHub repository (Settings → Secrets and variables → Actions):
+
+**Repository-level secrets** (Settings → Secrets and variables → Actions → Repository secrets):
+- `AZURE_CLIENT_ID_STAGING`: Client ID from Step 2
+- `AZURE_TENANT_ID`: Your Azure tenant ID (same for all environments)
+- `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (same for all environments)
+
+**Environment-level secrets** (Settings → Secrets and variables → Actions → Environment secrets → staging):
+- `STAGING_BOT_APP_ID`: microsoftAppId value
+- `STAGING_BOT_APP_PASSWORD`: microsoftAppPassword value
+
+You can set secrets using the GitHub CLI:
+
+```bash
+# Repository-level secrets
+gh secret set AZURE_CLIENT_ID_STAGING --body "<client-id>"
+gh secret set AZURE_TENANT_ID --body "<tenant-id>"
+gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
+
+# Environment-level secrets (requires the staging environment to exist first)
+gh secret set STAGING_BOT_APP_ID --env staging --body "<bot-app-id>"
+gh secret set STAGING_BOT_APP_PASSWORD --env staging --body "<bot-app-password>"
+```
+
 ### Step 5: Grant RBAC Permissions
+
+1. Go to your repository on GitHub
+2. Navigate to Settings → Environments
+3. Click "New environment"
+4. Name it **exactly** `staging` (must match workflow configuration)
+5. Optionally configure protection rules (e.g., require approval)
+
+### Step 6: Grant RBAC Permissions
 
 The staging OIDC service principal needs permissions to create and manage Azure resources:
 
@@ -122,7 +143,9 @@ az role assignment create \
 If you prefer to scope to a specific resource group (recommended):
 
 ```bash
-# The workflow will create a resource group named rg-staging (by default)
+# By default, azd creates a resource group following the naming convention: rg-<environmentName>
+# With "azd env new staging", this would be "rg-staging"
+# If you have customized your azd configuration, the resource group name may differ.
 # You may need to pre-create it or grant permissions after first run
 az group create --name rg-staging --location japaneast
 
