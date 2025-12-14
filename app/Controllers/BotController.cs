@@ -55,7 +55,6 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                     var message = innerEx.Message;
                     // Check for common authentication error codes
                     if (message.Contains("AADSTS", StringComparison.OrdinalIgnoreCase) ||
-                        message.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
                         message.Contains("Conditional Access", StringComparison.OrdinalIgnoreCase))
                     {
                         isAuthenticationError = true;
