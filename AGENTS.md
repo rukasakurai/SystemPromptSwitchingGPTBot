@@ -110,12 +110,17 @@ dotnet test ./tests --configuration Release --verbosity normal
 **Bicep linting:**
 ```powershell
 # Windows PowerShell/pwsh - validate each Bicep file
-cd infra && Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
+cd infra && Get-ChildItem *.bicep | ForEach-Object { 
+    bicep build $_.Name
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 ```
 
 ```bash
-# Linux/bash or pwsh - validate each Bicep file
-cd infra && for file in *.bicep; do bicep build "$file"; done
+# Linux/bash - validate each Bicep file
+cd infra && for file in *.bicep; do 
+    bicep build "$file" || exit 1
+done
 ```
 
 **.NET code formatting:**
