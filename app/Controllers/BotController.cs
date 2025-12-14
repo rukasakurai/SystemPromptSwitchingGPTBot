@@ -64,23 +64,14 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                         _logger.LogWarning(innerEx, 
                             "Authentication error during token acquisition. " +
                             "Error: {ErrorMessage}. " +
-                            "This may be due to Conditional Access policies or other authentication restrictions. " +
-                            "Returning 200 to avoid channel retries.",
+                            "This may be due to Conditional Access policies or other authentication restrictions.",
                             message);
-                        
-                        // Try to extract and log trace/correlation IDs if present
-                        if (message.Contains("Trace ID:", StringComparison.OrdinalIgnoreCase) ||
-                            message.Contains("Correlation ID:", StringComparison.OrdinalIgnoreCase))
-                        {
-                            _logger.LogWarning("Full error details: {FullMessage}", message);
-                        }
                     }
                 }
 
                 if (isAuthenticationError)
                 {
                     // Return 200 to prevent channel retries for authentication issues
-                    _logger.LogWarning("Authentication-related AggregateException caught. Returning 200 to avoid channel retries.");
                     if (!Response.HasStarted)
                     {
                         Response.StatusCode = 200;

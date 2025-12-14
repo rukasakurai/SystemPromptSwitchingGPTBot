@@ -40,6 +40,18 @@ namespace SystemPromptSwitchingGPTBot.Tests
             };
         }
 
+        private void VerifyLogMessage(LogLevel logLevel, string expectedMessage, Times times)
+        {
+            _mockLogger.Verify(
+                x => x.Log(
+                    logLevel,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(expectedMessage)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                times);
+        }
+
         [Fact]
         public async Task PostAsync_WithUnauthorizedAccessException_Returns200()
         {
@@ -53,14 +65,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Warning,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Authentication failure")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            VerifyLogMessage(LogLevel.Warning, "Authentication failure", Times.Once());
         }
 
         [Fact]
@@ -79,14 +84,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Warning,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Authentication error during token acquisition")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.Once());
         }
 
         [Fact]
@@ -105,14 +103,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Warning,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Authentication error during token acquisition")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.Once());
         }
 
         [Fact]
@@ -149,14 +140,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(500, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Non-authentication AggregateException")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            VerifyLogMessage(LogLevel.Error, "Non-authentication AggregateException", Times.Once());
         }
 
         [Fact]
@@ -172,14 +156,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(500, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Unhandled exception")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            VerifyLogMessage(LogLevel.Error, "Unhandled exception", Times.Once());
         }
 
         [Fact]
@@ -195,14 +172,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert - default status code is 200, and no errors are logged
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Never);
+            VerifyLogMessage(LogLevel.Error, "", Times.Never());
         }
 
         [Fact]
@@ -222,14 +192,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Warning,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Authentication error during token acquisition")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.AtLeastOnce);
+            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.AtLeastOnce());
         }
     }
 }
