@@ -40,6 +40,12 @@ namespace SystemPromptSwitchingGPTBot.Tests
             };
         }
 
+        /// <summary>
+        /// Helper method to verify that a log message was written at the specified log level.
+        /// </summary>
+        /// <param name="logLevel">The expected log level (e.g., Warning, Error)</param>
+        /// <param name="expectedMessage">A substring that should be contained in the log message (not an exact match)</param>
+        /// <param name="times">The expected number of times the log should have been written</param>
         private void VerifyLogMessage(LogLevel logLevel, string expectedMessage, Times times)
         {
             _mockLogger.Verify(
@@ -107,9 +113,10 @@ namespace SystemPromptSwitchingGPTBot.Tests
         }
 
         [Fact]
-        public async Task PostAsync_WithAggregateException_ContainingAuthenticationKeyword_Returns200()
+        public async Task PostAsync_WithAggregateException_ContainingAuthenticationKeyword_Returns500()
         {
             // Arrange
+            // Note: Generic "authentication" keyword is no longer treated as authentication error to avoid false positives
             var innerException = new Exception("Authentication credentials are not valid");
             var aggregateException = new AggregateException("Failed to process", innerException);
             
@@ -121,7 +128,8 @@ namespace SystemPromptSwitchingGPTBot.Tests
             await _controller.PostAsync();
 
             // Assert
-            Assert.Equal(200, _httpContext.Response.StatusCode);
+            Assert.Equal(500, _httpContext.Response.StatusCode);
+            VerifyLogMessage(LogLevel.Error, "Non-authentication AggregateException", Times.Once());
         }
 
         [Fact]
@@ -178,7 +186,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
                     It.IsAny<EventId>(),
                     It.IsAny<It.IsAnyType>(),
                     It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Never());
         }
 
@@ -199,7 +207,27 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.AtLeastOnce());
+            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.Once());
+        }
+
+        [Fact]
+        public async Task PostAsync_WithMultipleInnerExceptions_AllAuthenticationErrors_Returns200()
+        {
+            // Arrange
+            var innerException1 = new Exception("AADSTS50076: Multi-factor authentication is required");
+            var innerException2 = new Exception("AADSTS53003: Access has been blocked by Conditional Access policies");
+            var aggregateException = new AggregateException("Multiple authentication errors", innerException1, innerException2);
+            
+            _mockAdapter
+                .Setup(a => a.ProcessAsync(It.IsAny<HttpRequest>(), It.IsAny<HttpResponse>(), It.IsAny<IBot>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(aggregateException);
+
+            // Act
+            await _controller.PostAsync();
+
+            // Assert
+            Assert.Equal(200, _httpContext.Response.StatusCode);
+            VerifyLogMessage(LogLevel.Warning, "Authentication error during token acquisition", Times.Once());
         }
     }
 }

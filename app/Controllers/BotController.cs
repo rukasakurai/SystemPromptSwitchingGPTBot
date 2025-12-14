@@ -50,28 +50,32 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
             // If an UnauthorizedAccessException is wrapped inside an AggregateException, it will be caught here
             // rather than by the more specific catch block above. This is the intended behavior.
             catch (AggregateException ex)
+            {
                 // Check if this is an authentication failure (e.g., MSAL token acquisition failure)
                 bool isAuthenticationError = false;
+                Exception firstAuthException = null;
+                
                 foreach (var innerEx in ex.InnerExceptions)
                 {
-                    var message = innerEx.Message;
-                    // Check for common authentication error codes
-                    if (message.Contains("AADSTS", StringComparison.OrdinalIgnoreCase) ||
-                        message.Contains("Conditional Access", StringComparison.OrdinalIgnoreCase))
+                    if (IsAuthenticationException(innerEx))
                     {
                         isAuthenticationError = true;
-                        
-                        // Log detailed authentication error information
-                        _logger.LogWarning(innerEx, 
-                            "Authentication error during token acquisition. " +
-                            "Error: {ErrorMessage}. " +
-                            "This may be due to Conditional Access policies or other authentication restrictions.",
-                            message);
+                        if (firstAuthException == null)
+                        {
+                            firstAuthException = innerEx;
+                        }
                     }
                 }
 
                 if (isAuthenticationError)
                 {
+                    // Log detailed authentication error information once
+                    _logger.LogWarning(firstAuthException, 
+                        "Authentication error during token acquisition. " +
+                        "Error: {ErrorMessage}. " +
+                        "This may be due to Conditional Access policies or other authentication restrictions.",
+                        firstAuthException.Message);
+                    
                     // Return 200 to prevent channel retries for authentication issues
                     if (!Response.HasStarted)
                     {
@@ -96,6 +100,21 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                     Response.StatusCode = 500;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if an exception is related to authentication failures.
+        /// Checks for AADSTS error codes (Azure AD authentication errors) and Conditional Access policy blocks.
+        /// </summary>
+        /// <param name="ex">The exception to check</param>
+        /// <returns>True if the exception is authentication-related, false otherwise</returns>
+        private bool IsAuthenticationException(Exception ex)
+        {
+            var message = ex.Message;
+            // Check for Azure AD authentication error codes (AADSTS) or Conditional Access policy blocks
+            // Note: We intentionally avoid matching on the generic word "authentication" to reduce false positives
+            return message.Contains("AADSTS", StringComparison.OrdinalIgnoreCase) ||
+                   message.Contains("Conditional Access", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
