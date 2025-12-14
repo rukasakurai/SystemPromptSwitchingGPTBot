@@ -59,13 +59,13 @@ jobs:
       - name: Validate required secrets
         run: |
           # Validate that required bot identity secrets are present
-          if [ -z "${{ secrets.STAGING_BOT_APP_ID }}" ]; then
-            echo "::error::STAGING_BOT_APP_ID secret is not set. Please configure the Staging environment secret."
+          if [ -z "${{ secrets.BOT_APP_ID }}" ]; then
+            echo "::error::BOT_APP_ID secret is not set. Please configure the Staging environment secret."
             echo "::error::See docs/staging-setup.md for setup instructions."
             exit 1
           fi
-          if [ -z "${{ secrets.STAGING_BOT_APP_PASSWORD }}" ]; then
-            echo "::error::STAGING_BOT_APP_PASSWORD secret is not set. Please configure the Staging environment secret."
+          if [ -z "${{ secrets.BOT_APP_PASSWORD }}" ]; then
+            echo "::error::BOT_APP_PASSWORD secret is not set. Please configure the Staging environment secret."
             echo "::error::See docs/staging-setup.md for setup instructions."
             exit 1
           fi
@@ -88,8 +88,8 @@ jobs:
           # - Creating Entra app registrations in CI requires elevated permissions
           # - Storing stable credentials as secrets allows consistent staging identity
           azd env set microsoftAppType SingleTenant
-          azd env set microsoftAppId ${{ secrets.STAGING_BOT_APP_ID }}
-          azd env set microsoftAppPassword ${{ secrets.STAGING_BOT_APP_PASSWORD }}
+          azd env set microsoftAppId ${{ secrets.BOT_APP_ID }}
+          azd env set microsoftAppPassword ${{ secrets.BOT_APP_PASSWORD }}
           azd env set microsoftAppTenantId ${{ secrets.AZURE_TENANT_ID }}
       
       - name: Provision infrastructure
