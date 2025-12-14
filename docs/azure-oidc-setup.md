@@ -23,10 +23,10 @@ PowerShell:
 
 ```powershell
 $SUBSCRIPTION_ID = az account show --query id -o tsv
-"Subscription ID: $SUBSCRIPTION_ID"
+Write-Host "Subscription ID: $SUBSCRIPTION_ID"
 
 $TENANT_ID = az account show --query tenantId -o tsv
-"Tenant ID: $TENANT_ID"
+Write-Host "Tenant ID: $TENANT_ID"
 ```
 
 ## Step 2: Create or Use Existing Azure AD App Registration
