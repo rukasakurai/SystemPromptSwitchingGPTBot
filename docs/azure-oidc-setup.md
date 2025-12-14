@@ -84,8 +84,9 @@ az role assignment create \
 
 ```bash
 # Set your GitHub repository details
-export GITHUB_ORG="rukasakurai"
-export GITHUB_REPO="SystemPromptSwitchingGPTBot"
+# Replace <your-org> and <your-repo> with your actual GitHub organization/user and repository name
+export GITHUB_ORG="<your-org>"
+export GITHUB_REPO="<your-repo>"
 
 # Create federated credential for main branch
 az ad app federated-credential create \
