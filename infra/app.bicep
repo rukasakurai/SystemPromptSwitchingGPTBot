@@ -72,6 +72,8 @@ resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
     MicrosoftAppType: microsoftAppType
     MicrosoftAppId: microsoftAppId
     MicrosoftAppPassword: microsoftAppPassword
