@@ -25,8 +25,8 @@ This document establishes the contract between this repository and AI agents. It
 - Azure CLI required for local Azure resource interaction
 
 ### Blessed Path for Setup
-```powershell
-# Commands below work on both Windows (PowerShell/pwsh) and Linux (bash)
+```shell
+# Cross-platform commands (work identically on Windows PowerShell/pwsh and Linux bash)
 
 # 1. Prerequisites check
 dotnet --version  # Must be 8.0.x or higher
@@ -74,26 +74,31 @@ dotnet run --project ./app
 ## 3. Agent Work Validation Commands
 
 ### Install/Bootstrap
-```powershell
-# Cross-platform commands (Windows PowerShell/pwsh or Linux bash)
+```shell
+# Cross-platform commands (work identically on both platforms)
 dotnet restore ./app/SystemPromptSwitchingGPTBot.csproj
 dotnet restore ./tests/SystemPromptSwitchingGPTBot.Tests.csproj
 ```
 
 ### Build
-```powershell
+```shell
 # Build application
 dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
+```
 
-# Validate infrastructure
-# Windows PowerShell: cd infra; bicep build main.bicep
-# Linux/bash or pwsh: cd infra && bicep build main.bicep
+```powershell
+# Validate infrastructure - Windows PowerShell
+cd infra; bicep build main.bicep
+```
+
+```bash
+# Validate infrastructure - Linux/bash or pwsh
 cd infra && bicep build main.bicep
 ```
 
 ### Test
-```powershell
-# Run all tests
+```shell
+# Run all tests (cross-platform)
 dotnet test ./tests --configuration Release
 
 # Run with detailed output
@@ -101,14 +106,23 @@ dotnet test ./tests --configuration Release --verbosity normal
 ```
 
 ### Lint/Format
-```powershell
-# Bicep linting - validate each Bicep file in infra/ directory
-# Windows PowerShell: cd infra; Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
-# Linux/bash or pwsh: cd infra && for file in *.bicep; do bicep build "$file"; done
 
-# .NET code formatting (no .editorconfig or formatting rules currently configured)
+**Bicep linting:**
+```powershell
+# Windows PowerShell - validate each Bicep file
+cd infra; Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
+```
+
+```bash
+# Linux/bash or pwsh - validate each Bicep file
+cd infra && for file in *.bicep; do bicep build "$file"; done
+```
+
+**.NET code formatting:**
+```shell
+# No .editorconfig or formatting rules currently configured
 # If adding code style rules in the future, use:
-# dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
+dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
 ```
 
 ### Minimum Bar for "Change is Acceptable"
