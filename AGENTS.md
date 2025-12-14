@@ -85,7 +85,9 @@ dotnet restore ./tests/SystemPromptSwitchingGPTBot.Tests.csproj
 # Build application
 dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
 
-# Validate infrastructure (use 'cd infra; bicep build main.bicep' on Windows PowerShell)
+# Validate infrastructure
+# Windows PowerShell: cd infra; bicep build main.bicep
+# Linux/bash or pwsh: cd infra && bicep build main.bicep
 cd infra && bicep build main.bicep
 ```
 
@@ -101,8 +103,8 @@ dotnet test ./tests --configuration Release --verbosity normal
 ### Lint/Format
 ```powershell
 # Bicep linting - validate each Bicep file in infra/ directory
-# On Windows PowerShell: cd infra; foreach ($file in Get-ChildItem *.bicep) { bicep build $file.Name }
-# On Linux/bash or pwsh: cd infra && for file in *.bicep; do bicep build "$file"; done
+# Windows PowerShell: cd infra; Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
+# Linux/bash or pwsh: cd infra && for file in *.bicep; do bicep build "$file"; done
 
 # .NET code formatting (no .editorconfig or formatting rules currently configured)
 # If adding code style rules in the future, use:
