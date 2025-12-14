@@ -19,6 +19,16 @@ export TENANT_ID=$(az account show --query tenantId --output tsv)
 echo "Tenant ID: $TENANT_ID"
 ```
 
+PowerShell:
+
+```powershell
+$SUBSCRIPTION_ID = az account show --query id -o tsv
+"Subscription ID: $SUBSCRIPTION_ID"
+
+$TENANT_ID = az account show --query tenantId -o tsv
+"Tenant ID: $TENANT_ID"
+```
+
 ## Step 2: Create or Use Existing Azure AD App Registration
 
 ### Option A: Create a new app registration
@@ -60,6 +70,16 @@ az role assignment create \
   --scope /subscriptions/$SUBSCRIPTION_ID
 ```
 
+Tip: If you know the target resource group (recommended), scope RBAC to it instead of the whole subscription:
+
+```bash
+az role assignment create \
+  --role Contributor \
+  --assignee-object-id $SP_OBJECT_ID \
+  --assignee-principal-type ServicePrincipal \
+  --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/<resource-group-name>
+```
+
 ## Step 4: Configure Federated Credentials
 
 ```bash
@@ -88,6 +108,18 @@ az ad app federated-credential create \
     "audiences": ["api://AzureADTokenExchange"],
     "description": "GitHub Actions OIDC for pull requests"
   }'
+
+# If your workflow uses a GitHub Environment (this repo uses environment: Production),
+# add a federated credential for that environment too.
+az ad app federated-credential create \
+  --id $CLIENT_ID \
+  --parameters '{
+    "name": "github-actions-env-production",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:'"$GITHUB_ORG"'/'"$GITHUB_REPO"':environment:Production",
+    "audiences": ["api://AzureADTokenExchange"],
+    "description": "GitHub Actions OIDC for Production environment"
+  }'
 ```
 
 ## Step 5: Configure GitHub Secrets
@@ -112,7 +144,7 @@ gh secret list
 az ad app federated-credential list --id $CLIENT_ID --query "[].{Name:name, Subject:subject}" --output table
 
 # Verify role assignments
-az role assignment list --assignee $CLIENT_ID --query "[].{Role:roleDefinitionName, Scope:scope}" --output table
+az role assignment list --assignee $SP_OBJECT_ID --query "[].{Role:roleDefinitionName, Scope:scope}" --output table
 ```
 
 ## Troubleshooting
