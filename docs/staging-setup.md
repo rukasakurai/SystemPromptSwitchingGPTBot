@@ -62,7 +62,7 @@ Follow the instructions in [azure-oidc-setup.md](./azure-oidc-setup.md) to creat
 
 Key differences for staging:
 - Use a separate app registration (e.g., `github-actions-staging-oidc`)
-- Configure federated credential for the **staging** environment:
+- Configure federated credential for the **Staging** environment:
 
 ```bash
 export GITHUB_ORG="<your-org>"
@@ -74,9 +74,9 @@ az ad app federated-credential create \
   --parameters '{
     "name": "github-actions-staging",
     "issuer": "https://token.actions.githubusercontent.com",
-    "subject": "repo:'"$GITHUB_ORG"'/'"$GITHUB_REPO"':environment:staging",
+    "subject": "repo:'"$GITHUB_ORG"'/'"$GITHUB_REPO"':environment:Staging",
     "audiences": ["api://AzureADTokenExchange"],
-    "description": "GitHub Actions OIDC for staging environment"
+    "description": "GitHub Actions OIDC for Staging environment"
   }'
 ```
 
@@ -87,7 +87,7 @@ First, create the GitHub environment that will be used for staging deployments:
 1. Go to your repository on GitHub
 2. Navigate to Settings → Environments
 3. Click "New environment"
-4. Name it **exactly** `staging` (must match workflow configuration)
+4. Name it **exactly** `Staging` (must match workflow configuration)
 5. Optionally configure protection rules (e.g., require approval)
 
 ### Step 4: Configure GitHub Secrets
@@ -99,7 +99,7 @@ Set the following secrets in your GitHub repository (Settings → Secrets and va
 - `AZURE_TENANT_ID`: Your Azure tenant ID (same for all environments)
 - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (same for all environments)
 
-**Environment-level secrets** (Settings → Secrets and variables → Actions → Environment secrets → staging):
+**Environment-level secrets** (Settings → Secrets and variables → Actions → Environment secrets → Staging):
 - `STAGING_BOT_APP_ID`: microsoftAppId value
 - `STAGING_BOT_APP_PASSWORD`: microsoftAppPassword value
 
@@ -111,20 +111,12 @@ gh secret set AZURE_CLIENT_ID_STAGING --body "<client-id>"
 gh secret set AZURE_TENANT_ID --body "<tenant-id>"
 gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
 
-# Environment-level secrets (requires the staging environment to exist first)
-gh secret set STAGING_BOT_APP_ID --env staging --body "<bot-app-id>"
-gh secret set STAGING_BOT_APP_PASSWORD --env staging --body "<bot-app-password>"
+# Environment-level secrets (requires the Staging environment to exist first)
+gh secret set STAGING_BOT_APP_ID --env Staging --body "<bot-app-id>"
+gh secret set STAGING_BOT_APP_PASSWORD --env Staging --body "<bot-app-password>"
 ```
 
 ### Step 5: Grant RBAC Permissions
-
-1. Go to your repository on GitHub
-2. Navigate to Settings → Environments
-3. Click "New environment"
-4. Name it **exactly** `staging` (must match workflow configuration)
-5. Optionally configure protection rules (e.g., require approval)
-
-### Step 6: Grant RBAC Permissions
 
 The staging OIDC service principal needs permissions to create and manage Azure resources:
 

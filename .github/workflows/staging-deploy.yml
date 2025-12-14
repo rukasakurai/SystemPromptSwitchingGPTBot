@@ -18,7 +18,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     environment:
-      name: staging
+      name: Staging
     
     steps:
       - name: Checkout repository
