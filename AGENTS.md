@@ -7,7 +7,6 @@ This document establishes the contract between this repository and AI agents. It
 ### Reference Platforms
 - **Supported OS**: Windows and Linux (both fully supported for CI and local development)
   - .NET and Azure Web Apps have first-class support on both platforms
-  - CI: Windows (for .NET tests), Linux (for Bicep validation)
 - **Shells**: PowerShell/pwsh (Windows), bash (Linux) - commands work cross-platform
 - **.NET Version**: 8.0 (with forward compatibility to .NET 10 for tests)
 
