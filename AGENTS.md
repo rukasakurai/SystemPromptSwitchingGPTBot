@@ -41,6 +41,7 @@ This document establishes the contract between this repository and AI agents. It
   - `platform.bicep` - Reusable platform resources (App Service Plan, OpenAI, App Insights)
   - `app.bicep` - Bot-specific resources (Web App, Bot Service)
   - `role.bicep` - RBAC assignments
+- **Bicep API versions**: Use latest stable (non-preview) API versions from [Azure Templates documentation](https://learn.microsoft.com/en-us/azure/templates). Avoid preview versions unless they provide essential functionality not available in stable versions.
   
 ### GUI/Portal Usage Policy
 - Portal is useful for exploration, verification, and certain operations that lack CLI/IaC support
@@ -64,7 +65,7 @@ This document establishes the contract between this repository and AI agents. It
 ### Identity Types by Use Case
 - **Bot Framework identity**: App Registration with client secret (for Bot ↔ Bot Service auth)
   - Config: `MicrosoftAppId`, `MicrosoftAppPassword`, `MicrosoftAppTenantId`
-  - Type: `SingleTenant` (recommended for single-tenant scenarios; `MultiTenant` is still valid for cross-tenant scenarios)
+  - Type: `SingleTenant` (recommended for single-tenant scenarios)
 - **Web App to Azure OpenAI**: Managed Identity (system-assigned, passwordless)
   - Web App's identity gets RBAC on OpenAI resource
   - Uses `DefaultAzureCredential` in code
@@ -77,11 +78,6 @@ This document establishes the contract between this repository and AI agents. It
 - ❌ Storing credentials in code or appsettings.json (prefer managed identity; use Key Vault if secrets are necessary)
 
 ## 4. Observability Model Invariants
-
-### Current Approach
-- **Platform auto-instrumentation**: Application Insights configured at Web App level
-- **Connection string**: Passed via environment variable `APPLICATIONINSIGHTS_CONNECTION_STRING`
-- **SDK usage**: Optional in-app SDKs can enhance telemetry (not currently implemented beyond platform defaults)
 
 ### Logging vs Telemetry vs Visualization
 - **Logging**: Console logs captured by App Service, viewable in Log Stream
@@ -100,10 +96,6 @@ This document establishes the contract between this repository and AI agents. It
 - Application Insights resource should be in `infra/platform.bicep`
 - Web App should reference App Insights connection string in `infra/app.bicep`
 - Prefer provisioning observability tools via Bicep when possible
-
-### Observability Changes Require Confirmation
-- Before changing observability approach (e.g., adding Serilog, OpenTelemetry), **ask the user**
-- Significant changes affect cost, debuggability, and compliance requirements
 
 ## 5. What AGENTS.md Cannot Solve (and Mitigations)
 
