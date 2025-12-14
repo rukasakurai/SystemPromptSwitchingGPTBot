@@ -87,8 +87,8 @@ dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
 ```
 
 ```powershell
-# Validate infrastructure - Windows PowerShell
-cd infra; bicep build main.bicep
+# Validate infrastructure - Windows PowerShell/pwsh
+cd infra && bicep build main.bicep
 ```
 
 ```bash
@@ -109,8 +109,8 @@ dotnet test ./tests --configuration Release --verbosity normal
 
 **Bicep linting:**
 ```powershell
-# Windows PowerShell - validate each Bicep file
-cd infra; Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
+# Windows PowerShell/pwsh - validate each Bicep file
+cd infra && Get-ChildItem *.bicep | ForEach-Object { bicep build $_.Name }
 ```
 
 ```bash
