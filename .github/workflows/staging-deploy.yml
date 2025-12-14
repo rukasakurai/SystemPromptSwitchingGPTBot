@@ -56,7 +56,11 @@ jobs:
           # Set Azure location
           azd env set AZURE_LOCATION japaneast
           
-          # Set bot identity parameters (pre-created manually and stored as secrets)
+          # Set bot identity parameters from environment-scoped secrets
+          # Note: We don't run infra/hooks/preprovision.ps1 in CI because:
+          # - It creates a NEW app registration every time (not idempotent)
+          # - Creating Entra app registrations in CI requires elevated permissions
+          # - Storing stable credentials as secrets allows consistent staging identity
           azd env set microsoftAppType SingleTenant
           azd env set microsoftAppId ${{ secrets.STAGING_BOT_APP_ID }}
           azd env set microsoftAppPassword ${{ secrets.STAGING_BOT_APP_PASSWORD }}

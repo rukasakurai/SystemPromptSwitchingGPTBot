@@ -83,17 +83,6 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 - 本リポジトリにはデプロイ用の GitHub Actions が含まれています。GitHub Actions を使用してデプロイする場合はそれを使用してください。
 - ローカルからデプロイする場合は az cli や VS Code の Azure App Service 拡張機能を使用してデプロイしてください。
 
-#### Staging 環境への自動デプロイ (推奨)
-
-本リポジトリには、コード変更時に自動的にステージング環境をデプロイする GitHub Actions ワークフローが含まれています。
-
-- **ワークフロー**: `.github/workflows/staging-deploy.yml`
-- **トリガー**: `main` ブランチへの `app/**` または `infra/**` の変更
-- **実行内容**: `azd provision` + `azd deploy` (README.next.md の手順と同等)
-- **セットアップ方法**: [docs/staging-setup.md](docs/staging-setup.md) を参照
-
-このワークフローは本番環境に影響を与えず、インフラのプロビジョニングからアプリケーションのデプロイまでを自動化します。
-
 ### Teams での動作確認
 
 #### Manifest の作成
