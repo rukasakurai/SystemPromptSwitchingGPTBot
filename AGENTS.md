@@ -101,8 +101,9 @@ for file in *.bicep; do
   bicep build "$file"
 done
 
-# .NET code style (if .editorconfig exists)
-dotnet format ./app/SystemPromptSwitchingGPTBot.sln --verify-no-changes
+# .NET code formatting (no .editorconfig or formatting rules currently configured)
+# If adding code style rules in the future, use:
+# dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
 ```
 
 ### Minimum Bar for "Change is Acceptable"
