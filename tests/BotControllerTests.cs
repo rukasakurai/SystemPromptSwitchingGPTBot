@@ -172,7 +172,14 @@ namespace SystemPromptSwitchingGPTBot.Tests
 
             // Assert - default status code is 200, and no errors are logged
             Assert.Equal(200, _httpContext.Response.StatusCode);
-            VerifyLogMessage(LogLevel.Error, "", Times.Never());
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.Never());
         }
 
         [Fact]
