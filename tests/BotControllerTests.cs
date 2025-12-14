@@ -69,7 +69,7 @@ namespace SystemPromptSwitchingGPTBot.Tests
         }
 
         [Fact]
-        public async Task PostAsync_WithAggregateException_ContainingAADSTSError_Returns200()
+        public async Task PostAsync_WithAggregateException_ContainingAADSTS53003Error_Returns200()
         {
             // Arrange
             var innerException = new Exception("AADSTS53003: Access has been blocked by Conditional Access policies. Trace ID: 41ca209f-3430-4699-a4c9-78fd6827b300");
