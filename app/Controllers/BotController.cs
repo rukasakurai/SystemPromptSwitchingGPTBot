@@ -46,9 +46,9 @@ namespace _07JP27.SystemPromptSwitchingGPTBot.Controllers
                     Response.StatusCode = 200;
                 }
             }
-            // Note: The catch block for AggregateException is intentionally placed after UnauthorizedAccessException.
-            // If an UnauthorizedAccessException is wrapped inside an AggregateException, it will be caught here
-            // rather than by the more specific catch block above. This is the intended behavior.
+            // Note: AggregateException catch block is placed after UnauthorizedAccessException.
+            // If UnauthorizedAccessException is wrapped in an AggregateException, it will be caught by this
+            // AggregateException handler (not the UnauthorizedAccessException handler above). This is intentional.
             catch (AggregateException ex)
             {
                 // Check if this is an authentication failure (e.g., MSAL token acquisition failure)
