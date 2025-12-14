@@ -122,7 +122,7 @@ cd infra && for file in *.bicep; do bicep build "$file"; done
 ```shell
 # No .editorconfig or formatting rules currently configured
 # If adding code style rules in the future, use:
-dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
+# dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
 ```
 
 ### Minimum Bar for "Change is Acceptable"
