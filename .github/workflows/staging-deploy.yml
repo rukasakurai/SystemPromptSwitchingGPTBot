@@ -48,6 +48,14 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
+      - name: Configure azd to use Azure CLI auth
+        run: |
+          # Ensure Azure CLI context exists (from azure/login)
+          az account show
+
+          # Force azd to reuse Azure CLI auth in headless CI
+          azd config set auth.useAzCliAuth true
+      
       - name: Configure azd environment
         run: |
           # Create staging environment if it doesn't exist
@@ -55,6 +63,10 @@ jobs:
           
           # Set Azure location
           azd env set AZURE_LOCATION japaneast
+
+          # Make subscription/tenant explicit for non-interactive CI runs
+          azd env set AZURE_SUBSCRIPTION_ID ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azd env set AZURE_TENANT_ID ${{ secrets.AZURE_TENANT_ID }}
           
           # Set bot identity parameters from environment-scoped secrets
           # Note: We don't run infra/hooks/preprovision.ps1 in CI because:
@@ -76,15 +88,15 @@ jobs:
         id: outputs
         run: |
           # azd converts Bicep output 'webAppHostName' to environment variable 'WEBAPPHOSTNAME'
-          WEB_APP_HOSTNAME=$(azd env get-values | grep "^WEBAPPHOSTNAME=" | cut -d= -f2)
+          WEB_APP_HOSTNAME=$(azd env get-values | grep "^WEBAPPHOSTNAME=" | cut -d= -f2 | tr -d '"')
           if [ -n "$WEB_APP_HOSTNAME" ]; then
-            echo "webapp-url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
+            echo "webapp_url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
             echo "Staging bot will be available at: https://${WEB_APP_HOSTNAME}/api/messages"
           fi
       
       - name: Health check (optional)
-        if: steps.outputs.outputs.webapp-url != ''
+        if: steps.outputs.outputs.webapp_url != ''
         run: |
-          echo "Staging bot endpoint: ${{ steps.outputs.outputs.webapp-url }}/api/messages"
+          echo "Staging bot endpoint: ${{ steps.outputs.outputs.webapp_url }}/api/messages"
           # Optional: Add a curl health check here
-          # curl -f "${{ steps.outputs.outputs.webapp-url }}" || echo "Health check failed, but deployment completed"
+          # curl -f "${{ steps.outputs.outputs.webapp_url }}" || echo "Health check failed, but deployment completed"
