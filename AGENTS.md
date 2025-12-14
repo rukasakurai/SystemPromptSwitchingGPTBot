@@ -8,7 +8,6 @@ This document establishes the contract between this repository and AI agents. It
 - **Supported OS**: Windows and Linux (both fully supported for CI and local development)
   - .NET and Azure Web Apps have first-class support on both platforms
   - CI: Windows (for .NET tests), Linux (for Bicep validation)
-  - Local: Windows is widely used by contributors; Linux is equally supported
 - **Shells**: PowerShell/pwsh (Windows), bash (Linux) - commands work cross-platform
 - **.NET Version**: 8.0 (with forward compatibility to .NET 10 for tests)
 
@@ -24,42 +23,19 @@ This document establishes the contract between this repository and AI agents. It
 - Development can occur natively with .NET 8 SDK installed
 - Azure CLI required for local Azure resource interaction
 
-### Blessed Path for Setup
-```shell
-# Cross-platform commands (work identically on Windows PowerShell/pwsh and Linux bash)
-
-# 1. Prerequisites check
-dotnet --version  # Must be 8.0.x or higher
-
-# 2. Restore dependencies
-dotnet restore ./app/SystemPromptSwitchingGPTBot.csproj
-dotnet restore ./tests/SystemPromptSwitchingGPTBot.Tests.csproj
-
-# 3. Build
-dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
-
-# 4. Run tests
-dotnet test ./tests --configuration Release
-
-# 5. For local bot testing, configure Azure OpenAI access
-az login
-# Edit app/appsettings.Development.json with your Azure OpenAI endpoint and deployment name
-dotnet run --project ./app
-```
-
 ## 2. Repeatable Setup Invariants
 
 ### CLI/Code-First Principle
-- **All setup steps MUST be scriptable** via CLI commands or code
+- **Prefer scriptable setup steps** via CLI commands or code where possible
 - Configuration is declarative in:
   - `.csproj` files for dependencies
   - `appsettings.json` / `appsettings.Development.json` for app config
   - Bicep files (`infra/*.bicep`) for Azure resources
-- **Never** introduce steps that require GUI interaction to reproduce
+- Some operations (e.g., certain Entra ID or Teams configurations) may require Portal/GUI
 
 ### Declarative Infrastructure as Source of Truth
 - **Bicep files in `infra/` are authoritative** for Azure resource definitions
-- Infrastructure changes MUST be made in Bicep, not via Portal
+- Prefer making infrastructure changes in Bicep when possible
 - Main deployment entry point: `infra/main.bicep`
 - Module structure:
   - `platform.bicep` - Reusable platform resources (App Service Plan, OpenAI, App Insights)
@@ -67,77 +43,11 @@ dotnet run --project ./app
   - `role.bicep` - RBAC assignments
   
 ### GUI/Portal Usage Policy
-- **Portal is for exploration and verification ONLY**
-- Do not document Portal-only procedures
-- Any configuration discovered via Portal MUST be translated to Bicep or app config
+- Portal is useful for exploration, verification, and certain operations that lack CLI/IaC support
+- Prefer documenting scriptable approaches when available
+- For Portal-only operations (e.g., some Entra ID/Teams setup), document clearly
 
-## 3. Agent Work Validation Commands
-
-### Install/Bootstrap
-```shell
-# Cross-platform commands (work identically on both platforms)
-dotnet restore ./app/SystemPromptSwitchingGPTBot.csproj
-dotnet restore ./tests/SystemPromptSwitchingGPTBot.Tests.csproj
-```
-
-### Build
-```shell
-# Build application
-dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
-```
-
-```powershell
-# Validate infrastructure - Windows PowerShell/pwsh
-cd infra && bicep build main.bicep
-```
-
-```bash
-# Validate infrastructure - Linux/bash or pwsh
-cd infra && bicep build main.bicep
-```
-
-### Test
-```shell
-# Run all tests (cross-platform)
-dotnet test ./tests --configuration Release
-
-# Run with detailed output
-dotnet test ./tests --configuration Release --verbosity normal
-```
-
-### Lint/Format
-
-**Bicep linting:**
-```powershell
-# Windows PowerShell/pwsh - validate each Bicep file
-cd infra && Get-ChildItem *.bicep | ForEach-Object { 
-    bicep build $_.Name
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-}
-```
-
-```bash
-# Linux/bash - validate each Bicep file
-cd infra && for file in *.bicep; do 
-    bicep build "$file" || exit 1
-done
-```
-
-**.NET code formatting:**
-```shell
-# No .editorconfig or formatting rules currently configured
-# If adding code style rules in the future, use:
-# dotnet format ./app/SystemPromptSwitchingGPTBot.csproj --verify-no-changes
-```
-
-### Minimum Bar for "Change is Acceptable"
-1. `dotnet build` succeeds with no errors
-2. `dotnet test` passes all existing tests
-3. Bicep files validate successfully (if infrastructure changed)
-4. No new security vulnerabilities introduced
-5. Application still runs locally and connects to Bot Framework Emulator
-
-## 4. Azure / Entra Identity Invariants (MUST-NOT-VIOLATE)
+## 3. Azure / Entra Identity Guidelines
 
 ### App Registrations vs Service Principals
 - **App Registrations define applications** - they are the identity definition
@@ -146,11 +56,10 @@ done
 - **Enterprise Applications** in Portal are the SP representation - use for viewing, NOT creating
 
 ### RBAC Assignment Rules
-- **ALWAYS assign RBAC to Service Principals, NEVER to App Registrations**
+- **Assign RBAC to Service Principals** (the runtime identity), not App Registrations (which are just metadata)
 - For Azure OpenAI: Assign "Cognitive Services OpenAI User" role to:
   - Web App's Managed Identity (system-assigned)
   - Developer's user identity (for local dev)
-  - **NOT** to the Bot Framework App Registration
   
 ### Identity Types by Use Case
 - **Bot Framework identity**: App Registration with client secret (for Bot ↔ Bot Service auth)
@@ -163,12 +72,11 @@ done
   - Developer's user account gets RBAC on OpenAI resource
 
 ### Common Mistakes to AVOID
-- ❌ Assigning RBAC to an App Registration's Object ID
 - ❌ Using user accounts for non-interactive workloads
 - ❌ Creating multiple App Registrations when Managed Identity suffices
-- ❌ Storing credentials in code or appsettings.json (use Key Vault or managed identity)
+- ❌ Storing credentials in code or appsettings.json (prefer managed identity; use Key Vault if secrets are necessary)
 
-## 5. Observability Model Invariants
+## 4. Observability Model Invariants
 
 ### Current Approach
 - **Platform auto-instrumentation**: Application Insights configured at Web App level
@@ -189,43 +97,15 @@ done
   - `Timestamp` - for sequence reconstruction
 
 ### IaC Reflection of Observability
-- Application Insights resource MUST be in `infra/platform.bicep`
-- Web App MUST reference App Insights connection string in `infra/app.bicep`
-- Any new observability tools MUST be provisioned via Bicep, not Portal
+- Application Insights resource should be in `infra/platform.bicep`
+- Web App should reference App Insights connection string in `infra/app.bicep`
+- Prefer provisioning observability tools via Bicep when possible
 
 ### Observability Changes Require Confirmation
 - Before changing observability approach (e.g., adding Serilog, OpenTelemetry), **ask the user**
 - Significant changes affect cost, debuggability, and compliance requirements
 
-## 6. Change Guardrails and Authority Boundaries
-
-### What Agents MAY Do
-✅ Scaffold new bot dialogs or GPT configurations  
-✅ Refactor code within existing architectural boundaries  
-✅ Fix bugs and add tests for existing functionality  
-✅ Improve error handling and logging  
-✅ Update dependencies to patch versions (e.g., 1.2.3 → 1.2.4)  
-✅ Add Bicep resources that fit current architecture  
-✅ Optimize existing code for performance or readability  
-
-### What Agents MUST NOT Do Without Explicit Confirmation
-🛑 Add new NuGet packages (especially major libraries)  
-🛑 Change authentication model (e.g., switching from managed identity to keys)  
-🛑 Modify identity types or RBAC patterns  
-🛑 Change observability stack (e.g., replacing Application Insights)  
-🛑 Introduce breaking changes to Bot Framework message handling  
-🛑 Change deployment targets (e.g., from Web App to Container Apps)  
-🛑 Modify `main.bicep` parameters that affect security or cost  
-
-### When Unclear: ASK
-- If a task could affect architecture, security, cost, or debuggability: **Stop and ask**
-- Provide options with trade-offs instead of making unilateral decisions
-- Examples of "ask first" scenarios:
-  - "Should I add Entity Framework Core for conversation state persistence?"
-  - "Should I switch to Azure OpenAI Assistants API instead of Chat Completions?"
-  - "Should I add Redis for distributed state storage?"
-
-## 7. What AGENTS.md Cannot Solve (and Mitigations)
+## 5. What AGENTS.md Cannot Solve (and Mitigations)
 
 ### Enforcement
 - **Limitation**: Markdown states rules but cannot enforce them
@@ -248,12 +128,13 @@ done
   - Lightweight ADRs for architectural changes (if pattern emerges)
   - Explicit ownership: identity/infrastructure changes need human approval
 
-## 8. Documentation Guidelines
+## 6. Documentation Guidelines
 
 - Documentation (e.g., README.md) should be **very concise**
 - New documentation should be **rarely added** unless it prevents repeated human intervention
 - **Correcting incorrect documentation is encouraged**
-- If adding docs, ensure they follow the CLI/code-first principle
+- **Agents are encouraged to suggest improvements to AGENTS.md** to keep it accurate and useful
+- If adding docs, ensure they follow the CLI/code-first principle where possible
 
 ## Acceptance Checklist for Agents
 
@@ -262,7 +143,6 @@ Before completing a task, verify:
 - [ ] All tests pass (`dotnet test`)
 - [ ] Infrastructure validates (if Bicep changed)
 - [ ] No hardcoded secrets or credentials introduced
-- [ ] RBAC rules followed (if identity/auth changed)
+- [ ] RBAC guidelines followed (if identity/auth changed)
 - [ ] Observability intent preserved (if logging/telemetry changed)
-- [ ] Work is repeatable via CLI (no GUI-only steps)
-- [ ] Change aligns with authority boundaries (or was confirmed by user)
+- [ ] Work is scriptable via CLI where possible (document Portal steps if necessary)
