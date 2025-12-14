@@ -64,8 +64,8 @@ Set the following secrets in your GitHub repository (Settings → Secrets and va
 - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (same for all environments)
 
 **Environment-level secrets** (Settings → Secrets and variables → Actions → Environment secrets → Staging):
-- `STAGING_BOT_APP_ID`: microsoftAppId value
-- `STAGING_BOT_APP_PASSWORD`: microsoftAppPassword value
+- `BOT_APP_ID`: microsoftAppId value
+- `BOT_APP_PASSWORD`: microsoftAppPassword value
 
 Important: to ensure the workflow uses the repository-scoped Azure secrets, do not define `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, or `AZURE_SUBSCRIPTION_ID` as **Staging environment** secrets.
 
@@ -78,8 +78,8 @@ gh secret set AZURE_TENANT_ID --body "<tenant-id>"
 gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
 
 # Environment-level secrets (requires the Staging environment to exist first)
-gh secret set STAGING_BOT_APP_ID --env Staging --body "<bot-app-id>"
-gh secret set STAGING_BOT_APP_PASSWORD --env Staging --body "<bot-app-password>"
+gh secret set BOT_APP_ID --env Staging --body "<bot-app-id>"
+gh secret set BOT_APP_PASSWORD --env Staging --body "<bot-app-password>"
 ```
 
 ### Step 5: Grant RBAC Permissions
@@ -162,7 +162,7 @@ After successful deployment:
 - Ensure service principal has Contributor role
 
 ### Bot identity errors during provision
-- Verify `STAGING_BOT_APP_ID` and `STAGING_BOT_APP_PASSWORD` secrets are set
+- Verify `BOT_APP_ID` and `BOT_APP_PASSWORD` secrets are set in the Staging environment
 - Ensure the bot identity still exists in Entra ID (not deleted)
 - Check that client secret has not expired
 
@@ -178,7 +178,7 @@ After successful deployment:
 
 ## Maintenance
 
-- **Client secret expiration**: Bot identity client secrets expire based on tenant policy. Rotate and update `STAGING_BOT_APP_PASSWORD` secret before expiration.
+- **Client secret expiration**: Bot identity client secrets expire based on tenant policy. Rotate and update `BOT_APP_PASSWORD` secret in the Staging environment before expiration.
 - **OIDC credential**: Federated credentials don't expire but should be reviewed periodically
 - **Resource cleanup**: Consider adding auto-deletion for old staging resources if needed
 
