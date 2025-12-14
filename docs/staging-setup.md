@@ -17,57 +17,21 @@ The staging environment is automatically deployed via GitHub Actions whenever co
 
 ### Step 1: Create Bot Identity for Staging
 
-The staging environment can either use the same bot identity as production or have its own separate identity.
+Create a staging-specific Entra app registration for the bot.
 
-**Option A: Use the same bot identity as production (simpler)**
+You can create a staging bot identity by running `pwsh -File ./infra/hooks/preprovision.ps1` with `AZD_ENV_NAME=staging`, then use the generated `microsoftAppId`/`microsoftAppPassword` as the Staging environment secrets.
 
-If you want staging to use the same bot identity as production, you can use the existing `microsoftAppId` and `microsoftAppPassword` values from your production bot.
+### Step 2: Add a Staging Federated Credential (OIDC)
 
-**Option B: Create a separate bot identity for staging (isolated)**
+If you're reusing the same OIDC app registration as Production, you do **not** need a new OIDC app registration for staging.
+You only need to add a federated credential for the **Staging** GitHub Environment on that existing OIDC app registration (skip this step if it's already configured).
 
-If you want complete isolation, run the preprovision script to create a new Entra app registration for staging:
-
-```bash
-# Set the environment name for staging
-export AZD_ENV_NAME=staging
-
-# Run the preprovision script
-pwsh -File ./infra/hooks/preprovision.ps1
-```
-
-This will:
-- Create a new Entra app registration
-- Create a client secret for the bot
-- Store the values in azd environment
-
-After running the script, retrieve the values for GitHub secrets:
-
-```bash
-azd env get-values | grep microsoft
-```
-
-You'll see output like:
-```
-microsoftAppId=<app-id>
-microsoftAppPassword=<password>
-microsoftAppTenantId=<tenant-id>
-microsoftAppType=SingleTenant
-```
-
-**Save these values** - you'll need them for GitHub secrets.
-
-### Step 2: Set Up OIDC Authentication for GitHub Actions (Staging)
-
-Follow the instructions in [azure-oidc-setup.md](./azure-oidc-setup.md) to create a separate OIDC app registration for staging deployments.
-
-Key differences for staging:
-- Use a separate app registration (e.g., `github-actions-staging-oidc`)
-- Configure federated credential for the **Staging** environment:
+Key point: the federated credential subject must include `environment:Staging`.
 
 ```bash
 export GITHUB_ORG="<your-org>"
 export GITHUB_REPO="<your-repo>"
-export CLIENT_ID="<staging-oidc-client-id>"
+export CLIENT_ID="<staging-oidc-client-id>" # same value as your repository secret AZURE_CLIENT_ID (the Production OIDC app registration client ID)
 
 az ad app federated-credential create \
   --id $CLIENT_ID \
@@ -95,7 +59,7 @@ First, create the GitHub environment that will be used for staging deployments:
 Set the following secrets in your GitHub repository (Settings → Secrets and variables → Actions):
 
 **Repository-level secrets** (Settings → Secrets and variables → Actions → Repository secrets):
-- `AZURE_CLIENT_ID_STAGING`: Client ID from Step 2
+- `AZURE_CLIENT_ID`: Client ID from Step 2
 - `AZURE_TENANT_ID`: Your Azure tenant ID (same for all environments)
 - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (same for all environments)
 
@@ -103,11 +67,13 @@ Set the following secrets in your GitHub repository (Settings → Secrets and va
 - `STAGING_BOT_APP_ID`: microsoftAppId value
 - `STAGING_BOT_APP_PASSWORD`: microsoftAppPassword value
 
+Important: to ensure the workflow uses the repository-scoped Azure secrets, do not define `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, or `AZURE_SUBSCRIPTION_ID` as **Staging environment** secrets.
+
 You can set secrets using the GitHub CLI:
 
 ```bash
 # Repository-level secrets
-gh secret set AZURE_CLIENT_ID_STAGING --body "<client-id>"
+gh secret set AZURE_CLIENT_ID --body "<client-id>"
 gh secret set AZURE_TENANT_ID --body "<tenant-id>"
 gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
 
@@ -191,7 +157,7 @@ After successful deployment:
 ## Troubleshooting
 
 ### Workflow fails with authentication error
-- Verify OIDC federated credential is configured for the `staging` environment
+- Verify OIDC federated credential is configured for the `Staging` GitHub Environment (subject includes `environment:Staging`)
 - Check that all GitHub secrets are set correctly
 - Ensure service principal has Contributor role
 
