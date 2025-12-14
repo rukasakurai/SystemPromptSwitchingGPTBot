@@ -5,10 +5,11 @@ This document establishes the contract between this repository and AI agents. It
 ## 1. Canonical Execution Environment
 
 ### Reference Platforms
-- **Supported OS**: Windows and Linux (both used in CI and local development)
+- **Supported OS**: Windows and Linux (both fully supported for CI and local development)
+  - .NET and Azure Web Apps have first-class support on both platforms
   - CI: Windows (for .NET tests), Linux (for Bicep validation)
-  - Local: Both Windows and Linux are fully supported for development
-- **Shells**: PowerShell/pwsh (Windows), bash (Linux)
+  - Local: Windows is widely used by contributors; Linux is equally supported
+- **Shells**: PowerShell/pwsh (Windows), bash (Linux) - commands work cross-platform
 - **.NET Version**: 8.0 (with forward compatibility to .NET 10 for tests)
 
 ### CI Parity
@@ -24,7 +25,9 @@ This document establishes the contract between this repository and AI agents. It
 - Azure CLI required for local Azure resource interaction
 
 ### Blessed Path for Setup
-```bash
+```powershell
+# Commands below work on both Windows (PowerShell/pwsh) and Linux (bash)
+
 # 1. Prerequisites check
 dotnet --version  # Must be 8.0.x or higher
 
@@ -71,22 +74,23 @@ dotnet run --project ./app
 ## 3. Agent Work Validation Commands
 
 ### Install/Bootstrap
-```bash
+```powershell
+# Cross-platform commands (Windows PowerShell/pwsh or Linux bash)
 dotnet restore ./app/SystemPromptSwitchingGPTBot.csproj
 dotnet restore ./tests/SystemPromptSwitchingGPTBot.Tests.csproj
 ```
 
 ### Build
-```bash
+```powershell
 # Build application
 dotnet build ./app/SystemPromptSwitchingGPTBot.csproj --configuration Release
 
-# Validate infrastructure
+# Validate infrastructure (use 'cd infra; bicep build main.bicep' on Windows PowerShell)
 cd infra && bicep build main.bicep
 ```
 
 ### Test
-```bash
+```powershell
 # Run all tests
 dotnet test ./tests --configuration Release
 
@@ -95,12 +99,10 @@ dotnet test ./tests --configuration Release --verbosity normal
 ```
 
 ### Lint/Format
-```bash
-# Bicep linting (run from infra/ directory)
-cd infra
-for file in *.bicep; do
-  bicep build "$file"
-done
+```powershell
+# Bicep linting - validate each Bicep file in infra/ directory
+# On Windows PowerShell: cd infra; foreach ($file in Get-ChildItem *.bicep) { bicep build $file.Name }
+# On Linux/bash or pwsh: cd infra && for file in *.bicep; do bicep build "$file"; done
 
 # .NET code formatting (no .editorconfig or formatting rules currently configured)
 # If adding code style rules in the future, use:
