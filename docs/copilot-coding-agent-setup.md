@@ -5,10 +5,12 @@ This document explains how to configure GitHub Copilot Coding Agent to securely 
 ## Prerequisites
 
 - Azure Developer CLI (azd) installed locally (latest version)
+- Azure CLI (az) installed (only required if you use the optional identity commands below)
 - Azure subscription with permissions to create resource groups and managed identities
 - GitHub repository cloned locally
 - GitHub Copilot subscription enabled
-- Repository permissions to update workflows and GitHub environment settings
+- Repository admin permissions (required to create/update the `copilot` GitHub environment and Copilot coding agent settings)
+- A configured Git remote for the repository (required so federated credentials can be created)
 
 ## Overview
 
@@ -78,15 +80,15 @@ This interactive command will:
 3. Create or select a resource group
 4. Configure RBAC role assignment (Reader by default)
 5. Set up federated credentials between GitHub and Azure
-6. Create or update `.github/workflows/copilot-agent-azure.yml`
+6. Add or update the GitHub Actions workflow `.github/workflows/copilot-setup-steps.yml` (and related assets)
 7. Configure GitHub environment variables
 
 ### 4. Configure GitHub Copilot Settings
 
-After running the configuration, you'll need to add the Azure MCP Server configuration to your GitHub Copilot coding agent settings:
+After running the configuration, you'll need to add the Azure MCP Server configuration to your GitHub Copilot coding agent settings (the command output and/or the generated pull request includes the exact JSON snippet to paste):
 
 1. Navigate to your GitHub repository settings
-2. Go to **Copilot** → **Coding Agent** settings
+2. Go to **Copilot** → **Coding agent**
 3. Add the following MCP server configuration:
 
 ```json
@@ -106,7 +108,7 @@ After running the configuration, you'll need to add the Azure MCP Server configu
 
 ### 5. Merge Pull Request (if created)
 
-The `azd coding-agent config` command may create a pull request with the new workflow file. Review and merge it to enable Copilot access.
+The `azd coding-agent config` command creates a branch and pull request containing the workflow setup (typically on a branch named `azd-enable-copilot-coding-agent-with-azure`). Review and merge it to enable Copilot access.
 
 ### 6. Verify Configuration
 
