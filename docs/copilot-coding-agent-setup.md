@@ -31,7 +31,40 @@ azd extension list --installed
 
 You should see `azure.coding-agent` in the installed extensions list.
 
-### 2. Run the Configuration Command
+### 2. Check for Existing or Create User-Assigned Managed Identity (Optional)
+
+The `azd coding-agent config` command can create a user-assigned managed identity automatically, but you may want to check for existing identities or create one manually beforehand.
+
+#### Check for Existing User-Assigned Managed Identities
+
+To list all user-assigned managed identities in your subscription:
+
+```bash
+# List all user-assigned managed identities in the current subscription
+az identity list --query "[].{Name:name, ResourceGroup:resourceGroup, Location:location, ClientId:clientId}" -o table
+
+# List identities in a specific resource group
+az identity list --resource-group <resource-group-name> -o table
+```
+
+#### Create a User-Assigned Managed Identity Manually
+
+If you prefer to create the managed identity before running the configuration:
+
+```bash
+# Create a resource group (if needed)
+az group create --name <resource-group-name> --location <location>
+
+# Create a user-assigned managed identity
+az identity create --name <identity-name> --resource-group <resource-group-name>
+
+# Get the identity details (including Client ID)
+az identity show --name <identity-name> --resource-group <resource-group-name> --query "{Name:name, ClientId:clientId, PrincipalId:principalId}" -o json
+```
+
+You can then select this identity during the `azd coding-agent config` interactive setup.
+
+### 3. Run the Configuration Command
 
 From your local repository root:
 
@@ -48,7 +81,7 @@ This interactive command will:
 6. Create or update `.github/workflows/copilot-agent-azure.yml`
 7. Configure GitHub environment variables
 
-### 3. Configure GitHub Copilot Settings
+### 4. Configure GitHub Copilot Settings
 
 After running the configuration, you'll need to add the Azure MCP Server configuration to your GitHub Copilot coding agent settings:
 
@@ -69,11 +102,11 @@ After running the configuration, you'll need to add the Azure MCP Server configu
 }
 ```
 
-### 4. Merge Pull Request (if created)
+### 5. Merge Pull Request (if created)
 
 The `azd coding-agent config` command may create a pull request with the new workflow file. Review and merge it to enable Copilot access.
 
-### 5. Verify Configuration
+### 6. Verify Configuration
 
 The configuration creates a GitHub environment (typically named `copilot`) with three variables:
 - `AZURE_CLIENT_ID` - Managed identity client ID

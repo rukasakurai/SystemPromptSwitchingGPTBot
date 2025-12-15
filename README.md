@@ -105,10 +105,6 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 
 For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
 
-## GitHub Copilot Coding Agent
-
-GitHub Copilot Coding Agent を使用して Azure リソースへのアクセスを有効にする方法については、[GitHub Copilot Coding Agent Setup Documentation](docs/copilot-coding-agent-setup.md) を参照してください。
-
 ## トラブルシューティング
 
 ### ボットが応答しない場合
