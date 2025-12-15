@@ -13,6 +13,9 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
     name: 'S0'
   }
   properties: {
+    // Custom subdomain is required for dedicated endpoint (e.g., https://<name>.openai.azure.com/)
+    // Without this, Azure uses regional endpoint (e.g., https://japaneast.api.cognitive.microsoft.com/)
+    customSubDomainName: 'oai-${resourceToken}'
     // Some tenants enforce keyless auth via Azure Policy.
     // Setting this explicitly avoids drift and matches the intended Entra ID / managed identity flow.
     disableLocalAuth: true
