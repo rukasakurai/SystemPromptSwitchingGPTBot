@@ -38,7 +38,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-0
     }
   }
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: 20
   }
 }
