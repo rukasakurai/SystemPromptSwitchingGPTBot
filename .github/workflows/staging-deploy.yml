@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Staging
+    env:
+      AZD_ENVIRONMENT_NAME: staging
+      RESOURCE_GROUP: rg-systempromptbot-staging
     
     steps:
       - name: Checkout repository
@@ -73,7 +76,7 @@ jobs:
       - name: Configure azd environment
         run: |
           # Create staging environment if it doesn't exist
-          azd env new staging --no-prompt || azd env select staging
+          azd env new ${{ env.AZD_ENVIRONMENT_NAME }} --no-prompt || azd env select ${{ env.AZD_ENVIRONMENT_NAME }}
           
           # Set Azure location
           azd env set AZURE_LOCATION japaneast
@@ -84,7 +87,7 @@ jobs:
           
           # Set resource group name for non-interactive provisioning
           # Resource group name includes project identifier for clarity in multi-project Azure subscriptions
-          azd env set AZURE_RESOURCE_GROUP rg-systempromptbot-staging
+          azd env set AZURE_RESOURCE_GROUP ${{ env.RESOURCE_GROUP }}
           
           # Set bot identity parameters from environment-scoped secrets
           # Note: We don't run infra/hooks/preprovision.ps1 in CI because:
@@ -100,9 +103,8 @@ jobs:
         run: |
           # Pre-create the resource group to avoid azd provision interactive prompt
           # azd provision --no-prompt requires the resource group to exist beforehand
-          RESOURCE_GROUP="rg-systempromptbot-staging"
           az group create \
-            --name "$RESOURCE_GROUP" \
+            --name "${{ env.RESOURCE_GROUP }}" \
             --location japaneast \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             || echo "Command failed (resource group may already exist), continuing..."
@@ -116,12 +118,24 @@ jobs:
       - name: Get deployment outputs
         id: outputs
         run: |
-          # Get specific output value without exposing all env values
-          # azd converts Bicep output 'webAppHostName' to environment variable 'WEBAPPHOSTNAME'
-          WEB_APP_HOSTNAME=$(azd env get-value WEBAPPHOSTNAME 2>/dev/null || echo "")
+          # Get deployment outputs directly from Azure Resource Manager
+          # This is more reliable than azd env get-value in CI environments
+          
+          # Dynamically determine the latest deployment name in the resource group
+          DEPLOYMENT_NAME=$(az deployment group list --resource-group "${{ env.RESOURCE_GROUP }}" --query "[0].name" --output tsv)
+          
+          # Query the deployment to get outputs
+          WEB_APP_HOSTNAME=$(az deployment group show \
+            --name "$DEPLOYMENT_NAME" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --query 'properties.outputs.webAppHostName.value' \
+            --output tsv 2>/dev/null || echo "")
+          
           if [ -n "$WEB_APP_HOSTNAME" ]; then
             echo "webapp_url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
             echo "Staging bot will be available at: https://${WEB_APP_HOSTNAME}/api/messages"
+          else
+            echo "Warning: Could not retrieve webAppHostName from deployment outputs"
           fi
       
       - name: Health check (optional)
