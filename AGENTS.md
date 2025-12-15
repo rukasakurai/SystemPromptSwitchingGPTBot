@@ -127,6 +127,60 @@ This document establishes the contract between this repository and AI agents. It
 - **Agents are encouraged to suggest improvements to AGENTS.md** to keep it accurate and useful
 - If adding docs, ensure they follow the CLI/code-first principle where possible
 
+## 7. Repository Maintenance Policy: Custom Instructions, Agents, and Prompts
+
+### Overview
+All contributors (human and AI agents) working on GitHub Issues or Pull Requests **MUST** reflect on whether their work requires updates to:
+- **Repository custom instructions** (`AGENTS.md`)
+- **Custom Copilot Agents** (`.agent.md` files in `.github/agents/`)
+- **Prompt files** (`.prompt.md` files in `.github/prompts/`)
+
+### When to Update These Resources
+
+#### Update AGENTS.md When:
+- You discover new patterns, conventions, or technical constraints that should be documented
+- Existing instructions are incorrect, incomplete, or outdated
+- You repeatedly face the same issue that could be prevented with better instructions
+- You make architectural or infrastructure changes that affect how agents should work
+
+#### Create/Update Custom Agents When:
+- You perform a specialized, repeatable task that requires domain-specific knowledge
+- The task involves a complex workflow that could be automated
+- Multiple issues require similar specialized expertise
+- The task benefits from having its own context and tool access
+
+#### Create/Update Prompt Files When:
+- You discover a useful pattern or approach that could be reused
+- There's a specific task that benefits from guided instructions
+- You want to standardize how certain operations are performed
+- The task is well-defined but doesn't require the full complexity of a custom agent
+
+### Reflection Requirement
+**Before requesting a PR review or closing an issue**, assignees and authors must reflect on their experience:
+1. What challenges or issues did you encounter?
+2. Were there repeated tasks that could be automated?
+3. Did you discover undocumented patterns or conventions?
+4. Would future contributors benefit from codified guidance?
+5. Should your approach be captured as a custom agent or prompt file?
+
+### Official Documentation References
+- [Repository custom instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions) - Add guidance specific to this repository
+- [Custom Copilot Agents](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-custom-agents) - Create specialized agents for complex tasks
+- [Prompt files](https://docs.github.com/en/copilot/tutorials/customization-library/prompt-files/your-first-prompt-file) - Define reusable prompts for common operations
+
+### Checklist for Issue and PR Templates
+The following checklist should be incorporated into issue and PR workflows:
+
+**Maintenance Review Checklist:**
+- [ ] I have reviewed `AGENTS.md` and determined if updates are needed based on my work
+- [ ] I have considered whether a custom agent (`.agent.md`) should be created or updated for this type of task
+- [ ] I have considered whether a prompt file (`.prompt.md`) should be created or updated for recurring patterns
+- [ ] If I identified needed updates to custom instructions/agents/prompts, I have either:
+  - [ ] Made those updates as part of this PR, OR
+  - [ ] Created a separate issue to track the needed updates
+
+**Note**: Updates to custom instructions, agents, or prompts should be made thoughtfully. When in doubt, create an issue to discuss the proposed changes rather than making ad-hoc updates.
+
 ## Acceptance Checklist for Agents
 
 Before completing a task, verify:
