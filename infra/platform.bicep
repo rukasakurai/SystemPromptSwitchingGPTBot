@@ -4,11 +4,11 @@ param location string
 @description('The version of the GPT-4o model to deploy')
 param gptModelVersion string = '2024-11-20'
 
-// Azure OpenAI Service
+// Azure OpenAI Service (migrated to Foundry/AIServices)
 resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   name: 'oai-${resourceToken}'
   location: location
-  kind: 'OpenAI'
+  kind: 'AIServices'
   sku: {
     name: 'S0'
   }
