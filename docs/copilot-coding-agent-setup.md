@@ -85,8 +85,9 @@ This interactive command will:
 
 ### 4. Configure GitHub Copilot Settings
 
-After running the configuration, you'll need to add the Azure MCP Server configuration to your GitHub Copilot coding agent settings (the command output and/or the generated pull request includes the exact JSON snippet to paste):
+After running the configuration, you'll need to add the Azure MCP Server configuration to your GitHub Copilot coding agent settings (the command output and/or the generated pull request includes the exact JSON snippet to paste).
 
+> **Note:** If you do not see the JSON snippet in your terminal output or the generated pull request, you can usually find it in the pull request description (if one was created) or by reviewing the command output logs in your terminal. If you are still unable to locate it, you can use the example provided below.
 1. Navigate to your GitHub repository settings
 2. Go to **Copilot** → **Coding agent**
 3. Add the following MCP server configuration:
