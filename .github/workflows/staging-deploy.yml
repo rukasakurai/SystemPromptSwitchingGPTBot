@@ -101,8 +101,9 @@ jobs:
       - name: Get deployment outputs
         id: outputs
         run: |
+          # Get specific output value without exposing all env values
           # azd converts Bicep output 'webAppHostName' to environment variable 'WEBAPPHOSTNAME'
-          WEB_APP_HOSTNAME=$(azd env get-values | grep "^WEBAPPHOSTNAME=" | cut -d= -f2 | tr -d '"')
+          WEB_APP_HOSTNAME=$(azd env get-value WEBAPPHOSTNAME 2>/dev/null || echo "")
           if [ -n "$WEB_APP_HOSTNAME" ]; then
             echo "webapp_url=https://${WEB_APP_HOSTNAME}" >> $GITHUB_OUTPUT
             echo "Staging bot will be available at: https://${WEB_APP_HOSTNAME}/api/messages"
