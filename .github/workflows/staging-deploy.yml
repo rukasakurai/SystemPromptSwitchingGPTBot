@@ -133,11 +133,14 @@ jobs:
             echo "Validating resource group creation permissions..."
             # We can't directly test "create RG" permission without creating one,
             # but we can check if we have Contributor role assignments
-            ROLE_ASSIGNMENTS=$(az role assignment list --assignee $SP_ID --query "[?roleDefinitionName=='Contributor' || roleDefinitionName=='Owner'].{role:roleDefinitionName,scope:scope}" --output json)
+            echo "Checking for Contributor/Owner role assignments..."
+            az role assignment list --assignee $SP_ID \
+              --query "[?roleDefinitionName=='Contributor' || roleDefinitionName=='Owner'].{role:roleDefinitionName,scope:scope}" \
+              --output table | tee /tmp/role_assignments.txt
             
-            if [ "$(echo $ROLE_ASSIGNMENTS | jq '. | length')" -gt 0 ]; then
-              echo "✓ Found Contributor/Owner role assignments:"
-              echo "$ROLE_ASSIGNMENTS" | jq -r '.[] | "  - \(.role) at \(.scope)"'
+            # Check if we got any results (more than just the header)
+            if [ $(wc -l < /tmp/role_assignments.txt) -gt 2 ]; then
+              echo "✓ Found Contributor/Owner role assignments (see above)"
             else
               echo "::warning::No Contributor or Owner role assignments found for this service principal"
               echo "::warning::The service principal may not have permissions to create the resource group"

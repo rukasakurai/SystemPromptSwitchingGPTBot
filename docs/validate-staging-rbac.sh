@@ -5,6 +5,10 @@
 
 set -e
 
+# Configuration constants
+readonly RG_NAME="${STAGING_RG_NAME:-rg-systempromptbot-staging}"
+readonly LOCATION="${STAGING_LOCATION:-japaneast}"
+
 echo "======================================================================"
 echo "Staging Environment RBAC Validation"
 echo "======================================================================"
@@ -15,6 +19,9 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+
+# Initialize variables
+RBAC_OK=false
 
 print_success() {
     echo -e "${GREEN}✓${NC} $1"
@@ -28,12 +35,18 @@ print_warning() {
     echo -e "${YELLOW}⚠${NC} $1"
 }
 
-# Check if Azure CLI is installed
+# Check if required tools are installed
 if ! command -v az &> /dev/null; then
     print_error "Azure CLI is not installed. Please install it from: https://learn.microsoft.com/cli/azure/install-azure-cli"
     exit 1
 fi
 print_success "Azure CLI is installed"
+
+if ! command -v jq &> /dev/null; then
+    print_error "jq is not installed. Please install it from: https://stedolan.github.io/jq/download/"
+    exit 1
+fi
+print_success "jq is installed"
 
 # Check if logged in
 if ! az account show &> /dev/null; then
@@ -61,16 +74,14 @@ if [ -z "$SUBSCRIPTION_ID" ]; then
     exit 1
 fi
 
-# Set defaults
-RG_NAME="rg-systempromptbot-staging"
-LOCATION="japaneast"
-
 echo ""
 echo "Configuration:"
 echo "  OIDC Client ID: $CLIENT_ID"
 echo "  Subscription ID: $SUBSCRIPTION_ID"
 echo "  Resource Group: $RG_NAME"
 echo "  Location: $LOCATION"
+echo ""
+echo "  (Override defaults with: STAGING_RG_NAME=... STAGING_LOCATION=... bash docs/validate-staging-rbac.sh)"
 echo ""
 
 echo "======================================================================"
