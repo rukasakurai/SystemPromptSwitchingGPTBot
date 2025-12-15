@@ -105,6 +105,22 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 
 For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
 
+## 開発支援: ドメインスペシャリスト
+
+このリポジトリには、GitHub Copilot で利用可能な **7 つのドメインスペシャリストエージェント** が配置されています。各エージェントは特定の技術領域の専門家として、開発を支援します。
+
+| エージェント | 専門領域 | 用途 |
+|------------|---------|------|
+| **Azure Infrastructure & Bicep** | Azure IaC、Bicep テンプレート開発 | `infra/` ディレクトリでの作業 |
+| **Azure Identity & Access Management** | Entra ID、マネージド ID、RBAC | 認証・認可の設定とトラブルシューティング |
+| **.NET Development & Migration** | .NET 8/10 開発、Bot Framework SDK | `app/` や `tests/` での C# コード作業 |
+| **Azure OpenAI & AI Services** | Azure OpenAI、GPT モデル統合 | `app/GptConfiguration/` でのシステムプロンプト設定 |
+| **SRE & Observability** | Application Insights、監視、ログ分析 | デバッグ、ログ追加、パフォーマンス分析 |
+| **Documentation & Developer Experience** | 技術文書、開発者体験の向上 | ドキュメント作成・更新 |
+| **Teams & Microsoft 365 Integration** | Teams アプリ開発、Bot Framework | `manifest/` ディレクトリ、Teams アプリ設定 |
+
+詳細は [.github/agents/README.md](.github/agents/README.md) を参照してください。
+
 ## トラブルシューティング
 
 ### ボットが応答しない場合

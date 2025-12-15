@@ -127,6 +127,25 @@ This document establishes the contract between this repository and AI agents. It
 - **Agents are encouraged to suggest improvements to AGENTS.md** to keep it accurate and useful
 - If adding docs, ensure they follow the CLI/code-first principle where possible
 
+## 7. Domain Specialist Agents
+
+This repository includes **custom AI agents** in `.github/agents/` that provide specialized expertise:
+
+### Available Specialists
+1. **Azure Infrastructure & Bicep** (`azure-infrastructure-bicep.md`) - IaC, Bicep templates, resource provisioning
+2. **Azure Identity & Access Management** (`azure-identity-access.md`) - Entra ID, managed identities, RBAC
+3. **.NET Development & Migration** (`dotnet-development.md`) - .NET 8/10, Bot Framework SDK
+4. **Azure OpenAI & AI Services** (`azure-openai-services.md`) - GPT integration, prompt engineering
+5. **SRE & Observability** (`sre-observability.md`) - Application Insights, monitoring, KQL
+6. **Documentation & Developer Experience** (`documentation-devex.md`) - Technical writing, developer onboarding
+7. **Teams & Microsoft 365 Integration** (`teams-integration.md`) - Teams apps, Bot Framework
+
+### Using Domain Specialists
+- These agents are available through GitHub Copilot for domain-specific tasks
+- Each agent aligns with the guidelines in this AGENTS.md document
+- Prefer delegating domain-specific work to the relevant specialist
+- See `.github/agents/README.md` for detailed usage guide
+
 ## Acceptance Checklist for Agents
 
 Before completing a task, verify:
