@@ -103,8 +103,8 @@ If you prefer to scope to a specific resource group (recommended):
 ```bash
 # The staging workflow uses resource group "rg-systempromptbot-staging" (configured via AZURE_RESOURCE_GROUP in the workflow)
 # The resource group name includes the project identifier for clarity in multi-project Azure subscriptions
-# azd will create this resource group automatically during first provisioning if it doesn't exist
-# Pre-creating the resource group is optional but recommended for testing RBAC setup
+# Note: The workflow pre-creates this resource group automatically before running azd provision
+# This is required for non-interactive (--no-prompt) provisioning to work correctly
 az group create --name rg-systempromptbot-staging --location japaneast
 
 az role assignment create \
@@ -121,9 +121,10 @@ Once configured, the staging deployment workflow (`.github/workflows/staging-dep
 1. **Trigger** on push to `main` when `app/**` or `infra/**` files change
 2. **Authenticate** to Azure using OIDC (passwordless)
 3. **Configure** azd environment with staging parameters (including `AZURE_RESOURCE_GROUP=rg-systempromptbot-staging`)
-4. **Provision** infrastructure via `azd provision` (creates/updates Azure resources in the `rg-systempromptbot-staging` resource group)
-5. **Deploy** application code via `azd deploy` (builds and deploys to App Service)
-6. **Output** deployment information for verification
+4. **Pre-create** resource group via Azure CLI (required for non-interactive provisioning)
+5. **Provision** infrastructure via `azd provision` (creates/updates Azure resources in the `rg-systempromptbot-staging` resource group)
+6. **Deploy** application code via `azd deploy` (builds and deploys to App Service)
+7. **Output** deployment information for verification
 
 ## Testing the Workflow
 
@@ -167,7 +168,7 @@ After successful deployment:
 - Check that client secret has not expired
 
 ### Resource group or resources not found
-- First run will create the resource group automatically
+- The workflow pre-creates the resource group before provisioning
 - Ensure service principal has permissions to create resource groups
 - Check Azure subscription quota limits
 
@@ -177,9 +178,9 @@ After successful deployment:
 - Check that all required parameters are provided
 
 ### "no default response for prompt 'Pick a resource group to use'"
-- This error occurs when `AZURE_RESOURCE_GROUP` is not set in the azd environment
-- The workflow now sets this automatically to `rg-systempromptbot-staging`
-- If using a custom resource group name, update the `azd env set AZURE_RESOURCE_GROUP` line in the workflow
+- This error occurs when the resource group doesn't exist before `azd provision --no-prompt` runs
+- The workflow now pre-creates the resource group using Azure CLI before provisioning
+- If using a custom resource group name, update both the `azd env set AZURE_RESOURCE_GROUP` and `az group create` lines in the workflow
 
 ## Maintenance
 
