@@ -109,7 +109,8 @@ For a sequence diagram representing a typical user scenario of using this app, p
 
 このリポジトリには、GitHub Copilot カスタムエージェントが含まれています：
 
-- **Azure OpenAI to Foundry Migration**: Azure OpenAI (`kind=OpenAI`) から Microsoft Foundry (`kind=AIServices`) への移行を自動化 ([詳細](docs/openai-to-foundry-migration.md))
+- **Azure OpenAI to Foundry Migration** ⚠️ **Preview/Untested**: Azure OpenAI (`kind=OpenAI`) から Microsoft Foundry (`kind=AIServices`) への移行を自動化 ([詳細](docs/openai-to-foundry-migration.md))
+  - このエージェントはプレビュー版であり、本番環境では十分にテストされていません。使用前に非本番環境でテストしてください。
 
 詳細は [docs/](docs/) ディレクトリを参照してください。
 

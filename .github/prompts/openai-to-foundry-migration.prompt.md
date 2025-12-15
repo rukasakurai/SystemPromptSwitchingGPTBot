@@ -3,6 +3,13 @@ agent: Azure OpenAI to Foundry Migration Assistant
 description: Automate migration from Azure OpenAI (kind=OpenAI) to Microsoft Foundry (kind=AIServices)
 ---
 
+> [!WARNING]
+> **PREVIEW VERSION - UNTESTED**
+> 
+> This custom agent is in preview and has not been thoroughly tested in production environments.
+> Use with caution and verify all changes carefully before deploying to production.
+> Feedback and improvements are welcome.
+
 ## Role
 You are an Azure infrastructure migration specialist with expertise in Azure Cognitive Services, specifically migrating from Azure OpenAI to Microsoft Foundry (AI Services).
 

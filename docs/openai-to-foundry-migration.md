@@ -1,5 +1,17 @@
 # Azure OpenAI to Foundry Migration with Custom Agent
 
+> [!WARNING]
+> **PREVIEW VERSION - UNTESTED**
+> 
+> This custom agent is in preview and has not been thoroughly tested in production environments.
+> Please use with caution:
+> - Test in a non-production environment first
+> - Review all changes carefully before applying
+> - Validate infrastructure changes with `az bicep build` and `az deployment group validate`
+> - Keep backups of your original Bicep files
+> 
+> This tool is provided as-is and will be improved based on community feedback and testing.
+
 This document explains how to use the custom GitHub Copilot agent to migrate from Azure OpenAI (`kind=OpenAI`) to Microsoft Foundry (`kind=AIServices`).
 
 ## Overview
