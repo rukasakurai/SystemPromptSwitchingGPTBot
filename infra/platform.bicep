@@ -21,9 +21,10 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   }
 }
 
-// Use the endpoint emitted by the resource provider.
-// In some configurations this is a regional Cognitive Services endpoint rather than a {name}.openai.azure.com hostname.
-var openAiEndpoint = openAiService.properties.endpoint
+// Construct the OpenAI-specific endpoint URL using the custom subdomain format.
+// This is required for token-based authentication with DefaultAzureCredential.
+// See: https://aka.ms/cogsvc-authenticatewithtoken
+var openAiEndpoint = 'https://${openAiService.name}.openai.azure.com/'
 
 // Azure OpenAI Model Deployment
 resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-01' = {
