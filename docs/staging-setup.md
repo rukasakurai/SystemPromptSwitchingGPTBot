@@ -101,7 +101,7 @@ az role assignment create \
 If you prefer to scope to a specific resource group (recommended):
 
 ```bash
-# The staging workflow uses resource group "rg-systempromptbot-staging" (configured via AZURE_RESOURCE_GROUP in the workflow)
+# The staging workflow uses resource group "rg-systempromptbot-staging" (configured in azure.yaml)
 # The resource group name includes the project identifier for clarity in multi-project Azure subscriptions
 # azd will create this resource group automatically during first provisioning if it doesn't exist
 # Pre-creating the resource group is optional but recommended for testing RBAC setup
@@ -120,7 +120,7 @@ Once configured, the staging deployment workflow (`.github/workflows/staging-dep
 
 1. **Trigger** on push to `main` when `app/**` or `infra/**` files change
 2. **Authenticate** to Azure using OIDC (passwordless)
-3. **Configure** azd environment with staging parameters (including `AZURE_RESOURCE_GROUP=rg-systempromptbot-staging`)
+3. **Configure** azd environment with staging parameters (the resource group `rg-systempromptbot-staging` is configured in `azure.yaml`)
 4. **Provision** infrastructure via `azd provision` (creates/updates Azure resources in the `rg-systempromptbot-staging` resource group)
 5. **Deploy** application code via `azd deploy` (builds and deploys to App Service)
 6. **Output** deployment information for verification
@@ -177,9 +177,10 @@ After successful deployment:
 - Check that all required parameters are provided
 
 ### "no default response for prompt 'Pick a resource group to use'"
-- This error occurs when `AZURE_RESOURCE_GROUP` is not set in the azd environment
-- The workflow now sets this automatically to `rg-systempromptbot-staging`
-- If using a custom resource group name, update the `azd env set AZURE_RESOURCE_GROUP` line in the workflow
+- This error occurs when the resource group is not configured in `azure.yaml` or the azd environment
+- The resource group is now configured in `azure.yaml` as `rg-systempromptbot-staging`
+- The workflow also sets `AZURE_RESOURCE_GROUP` via `azd env set` for additional redundancy
+- If using a custom resource group name, update both `azure.yaml` and the `azd env set AZURE_RESOURCE_GROUP` line in the workflow
 
 ## Maintenance
 

@@ -1,4 +1,5 @@
 name: SystemPromptSwitchingGPTBot
+resourceGroup: rg-systempromptbot-staging
 
 infra:
   provider: bicep
