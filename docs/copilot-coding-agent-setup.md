@@ -113,18 +113,16 @@ The `azd coding-agent config` command creates a branch and pull request containi
 
 ### 6. Verify Configuration
 
-The configuration creates a GitHub environment (typically named `copilot`) and sets up three credentials that **must be stored as secrets** (not variables) in your repository:
+The configuration creates a GitHub environment (typically named `copilot`) with three environment variables:
 - `AZURE_CLIENT_ID` - Managed identity client ID
 - `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
 - `AZURE_TENANT_ID` - Azure tenant ID
 
-**Important**: Even though OIDC federated credentials don't require client secrets, Microsoft and GitHub documentation recommend storing these IDs as secrets for security best practices. This ensures they are encrypted at rest and only exposed at runtime to authorized workflows.
+These are configured as **environment variables** (not secrets) in the `copilot` environment. With OIDC federated credentials, these IDs are not sensitive values since the actual authentication happens through the OIDC token exchange.
 
-These can be configured as either:
-- **Repository secrets** (Settings → Secrets and variables → Actions → Repository secrets), or
-- **Environment secrets** (Settings → Environments → copilot → Environment secrets)
+To verify, go to: **Settings** → **Environments** → **copilot** → **Environment variables**
 
-The workflow uses `secrets.AZURE_CLIENT_ID`, `secrets.AZURE_TENANT_ID`, and `secrets.AZURE_SUBSCRIPTION_ID` to reference these values.
+The workflow uses `vars.AZURE_CLIENT_ID`, `vars.AZURE_TENANT_ID`, and `vars.AZURE_SUBSCRIPTION_ID` to reference these environment variables.
 
 ## Security Model
 
@@ -162,7 +160,7 @@ Ensure you have:
 - Permissions to create managed identities and resource groups
 
 ### GitHub environment not created
-Manually create the `copilot` environment in GitHub repository settings and add the three required credentials as secrets from the azd output: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`. These should be added as environment secrets or repository secrets.
+Manually create the `copilot` environment in GitHub repository settings and add the three required values as environment variables from the azd output: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`. Go to Settings → Environments → copilot → Environment variables to add them.
 
 ## References
 
