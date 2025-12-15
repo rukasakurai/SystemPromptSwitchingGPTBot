@@ -121,10 +121,12 @@ jobs:
           # Get deployment outputs directly from Azure Resource Manager
           # This is more reliable than azd env get-value in CI environments
           
-          # azd creates a deployment named after the environment
+          # Dynamically determine the latest deployment name in the resource group
+          DEPLOYMENT_NAME=$(az deployment group list --resource-group "${{ env.RESOURCE_GROUP }}" --query "[0].name" --output tsv)
+          
           # Query the deployment to get outputs
           WEB_APP_HOSTNAME=$(az deployment group show \
-            --name ${{ env.AZD_ENVIRONMENT_NAME }} \
+            --name "$DEPLOYMENT_NAME" \
             --resource-group "${{ env.RESOURCE_GROUP }}" \
             --query 'properties.outputs.webAppHostName.value' \
             --output tsv 2>/dev/null || echo "")
