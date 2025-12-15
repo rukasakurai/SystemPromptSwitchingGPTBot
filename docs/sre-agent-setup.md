@@ -65,7 +65,10 @@ Bicep templates (`infra/sre-agent*.bicep`) are provided as a **foundation** for 
 
 **Deployment**:
 ```bash
-# Deploy SRE Agent at subscription scope (when ready for production use)
+# Step 1: Create resource group for the SRE Agent (if not exists)
+az group create --name rg-sre-agents --location eastus2
+
+# Step 2: Deploy SRE Agent at subscription scope (when ready for production use)
 az deployment sub create \
   --location eastus2 \
   --template-file infra/sre-agent.bicep \
@@ -77,7 +80,10 @@ az deployment sub create \
     permissionLevel=Reader
 ```
 
-**Note**: Deployment is at subscription scope to allow RBAC assignments across multiple resource groups.
+**Notes**: 
+- Deployment is at subscription scope to allow RBAC assignments across multiple resource groups
+- The resource group for the agent must exist before deployment
+- If deployment fails due to schema issues, use Azure Portal and export the configuration
 
 ## Using the SRE Agent
 
@@ -174,6 +180,7 @@ No additional configuration needed - the agent discovers these through resource 
 If deployment fails, verify region support:
 - **Supported**: East US 2, Sweden Central, Australia East (as of Dec 2024)
 - **Workaround**: Deploy agent in supported region; it can monitor resources in any region
+- **Note**: Check [Azure SRE Agent FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq) for latest region availability as this changes during preview
 
 ## Cost Considerations
 

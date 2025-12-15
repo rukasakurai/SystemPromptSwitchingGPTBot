@@ -12,6 +12,8 @@ param tags object = {}
 
 // SRE Agent resource
 // Note: properties schema is not fully documented. This is a minimal valid template.
+// WARNING: Empty properties may cause deployment failures. 
+// If deployment fails, use Azure Portal to create the agent and export the JSON configuration.
 resource sreAgent 'Microsoft.App/agents@2025-05-01-preview' = {
   name: agentName
   location: location
@@ -25,6 +27,9 @@ resource sreAgent 'Microsoft.App/agents@2025-05-01-preview' = {
     // - resourceGroups: array of resource group IDs to monitor
     // - permissionLevel: 'Reader' or 'Privileged'
     // Actual schema may differ - verify with Azure Portal JSON export
+    // 
+    // RECOMMENDATION: Deploy via Azure Portal first, then export JSON to understand
+    // the required properties schema for your environment
   }
 }
 
