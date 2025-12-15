@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Staging
+    env:
+      RESOURCE_GROUP: rg-systempromptbot-staging
     
     steps:
       - name: Checkout repository
@@ -84,7 +86,7 @@ jobs:
           
           # Set resource group name for non-interactive provisioning
           # Resource group name includes project identifier for clarity in multi-project Azure subscriptions
-          azd env set AZURE_RESOURCE_GROUP rg-systempromptbot-staging
+          azd env set AZURE_RESOURCE_GROUP ${{ env.RESOURCE_GROUP }}
           
           # Set bot identity parameters from environment-scoped secrets
           # Note: We don't run infra/hooks/preprovision.ps1 in CI because:
@@ -100,9 +102,8 @@ jobs:
         run: |
           # Pre-create the resource group to avoid azd provision interactive prompt
           # azd provision --no-prompt requires the resource group to exist beforehand
-          RESOURCE_GROUP="rg-systempromptbot-staging"
           az group create \
-            --name "$RESOURCE_GROUP" \
+            --name "${{ env.RESOURCE_GROUP }}" \
             --location japaneast \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             || echo "Command failed (resource group may already exist), continuing..."
@@ -118,13 +119,12 @@ jobs:
         run: |
           # Get deployment outputs directly from Azure Resource Manager
           # This is more reliable than azd env get-value in CI environments
-          RESOURCE_GROUP="rg-systempromptbot-staging"
           
           # azd creates a deployment named after the environment (staging in this case)
           # Query the deployment to get outputs
           WEB_APP_HOSTNAME=$(az deployment group show \
             --name staging \
-            --resource-group "$RESOURCE_GROUP" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
             --query 'properties.outputs.webAppHostName.value' \
             --output tsv 2>/dev/null || echo "")
           
