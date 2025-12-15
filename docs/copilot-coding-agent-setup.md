@@ -45,7 +45,7 @@ To list all user-assigned managed identities in your subscription:
 # List all user-assigned managed identities in the current subscription
 az identity list --query "[].{Name:name, ResourceGroup:resourceGroup, Location:location, ClientId:clientId}" -o table
 
-# List identities in a specific resource group
+# List identities in a specific resource group (shows all default columns)
 az identity list --resource-group <resource-group-name> -o table
 ```
 
@@ -103,6 +103,8 @@ After running the configuration, you'll need to add the Azure MCP Server configu
   }
 }
 ```
+
+**Note**: The `"tools": ["*"]` configuration grants access to all available Azure MCP Server tools. This is the recommended configuration for the Copilot Coding Agent to interact with Azure resources. Access is constrained by the RBAC role (default: Reader) assigned to the managed identity.
 
 ### 5. Merge Pull Request (if created)
 
