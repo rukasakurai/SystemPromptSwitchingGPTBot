@@ -21,8 +21,9 @@ resource openAiService 'Microsoft.CognitiveServices/accounts@2025-09-01' = {
   }
 }
 
-// Use the endpoint emitted by the resource provider.
-// In some configurations this is a regional Cognitive Services endpoint rather than a {name}.openai.azure.com hostname.
+// Use the endpoint from the resource provider.
+// With Standard deployment, this will be https://{name}.openai.azure.com/ which supports token auth.
+// See: https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/deployment-types
 var openAiEndpoint = openAiService.properties.endpoint
 
 // Azure OpenAI Model Deployment
@@ -37,7 +38,7 @@ resource openAIModel 'Microsoft.CognitiveServices/accounts/deployments@2025-09-0
     }
   }
   sku: {
-    name: 'GlobalStandard'
+    name: 'Standard'
     capacity: 20
   }
 }
