@@ -82,6 +82,10 @@ jobs:
           azd env set AZURE_SUBSCRIPTION_ID ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           azd env set AZURE_TENANT_ID ${{ secrets.AZURE_TENANT_ID }}
           
+          # Set resource group name for non-interactive provisioning
+          # Resource group name includes project identifier for clarity in multi-project Azure subscriptions
+          azd env set AZURE_RESOURCE_GROUP rg-systempromptbot-staging
+          
           # Set bot identity parameters from environment-scoped secrets
           # Note: We don't run infra/hooks/preprovision.ps1 in CI because:
           # - It creates a NEW app registration every time (not idempotent)

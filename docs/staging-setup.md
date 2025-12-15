@@ -101,17 +101,17 @@ az role assignment create \
 If you prefer to scope to a specific resource group (recommended):
 
 ```bash
-# By default, azd creates a resource group following the naming convention: rg-<environmentName>
-# With "azd env new staging", this would be "rg-staging"
-# If you have customized your azd configuration, the resource group name may differ.
-# You may need to pre-create it or grant permissions after first run
-az group create --name rg-staging --location japaneast
+# The staging workflow uses resource group "rg-systempromptbot-staging" (configured via AZURE_RESOURCE_GROUP in the workflow)
+# The resource group name includes the project identifier for clarity in multi-project Azure subscriptions
+# azd will create this resource group automatically during first provisioning if it doesn't exist
+# Pre-creating the resource group is optional but recommended for testing RBAC setup
+az group create --name rg-systempromptbot-staging --location japaneast
 
 az role assignment create \
   --role Contributor \
   --assignee-object-id $SP_OBJECT_ID \
   --assignee-principal-type ServicePrincipal \
-  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/rg-staging
+  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/rg-systempromptbot-staging
 ```
 
 ## How It Works
@@ -120,8 +120,8 @@ Once configured, the staging deployment workflow (`.github/workflows/staging-dep
 
 1. **Trigger** on push to `main` when `app/**` or `infra/**` files change
 2. **Authenticate** to Azure using OIDC (passwordless)
-3. **Configure** azd environment with staging parameters
-4. **Provision** infrastructure via `azd provision` (creates/updates Azure resources)
+3. **Configure** azd environment with staging parameters (including `AZURE_RESOURCE_GROUP=rg-systempromptbot-staging`)
+4. **Provision** infrastructure via `azd provision` (creates/updates Azure resources in the `rg-systempromptbot-staging` resource group)
 5. **Deploy** application code via `azd deploy` (builds and deploys to App Service)
 6. **Output** deployment information for verification
 
@@ -148,7 +148,7 @@ After successful deployment:
 
 ## Differences from Production
 
-- **Resource group**: Staging uses a separate resource group (e.g., `rg-staging`)
+- **Resource group**: Staging uses a separate resource group (`rg-systempromptbot-staging`)
 - **Bot identity**: Staging has its own Entra app registration
 - **OIDC credentials**: Staging uses separate OIDC app registration
 - **Deployment trigger**: Automatic on code push (production may require manual approval)
@@ -175,6 +175,11 @@ After successful deployment:
 - Review workflow logs for specific error messages
 - Verify Bicep files are valid (bicep-validation.yml should pass)
 - Check that all required parameters are provided
+
+### "no default response for prompt 'Pick a resource group to use'"
+- This error occurs when `AZURE_RESOURCE_GROUP` is not set in the azd environment
+- The workflow now sets this automatically to `rg-systempromptbot-staging`
+- If using a custom resource group name, update the `azd env set AZURE_RESOURCE_GROUP` line in the workflow
 
 ## Maintenance
 
