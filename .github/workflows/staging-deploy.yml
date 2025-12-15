@@ -96,6 +96,59 @@ jobs:
           azd env set microsoftAppPassword ${{ secrets.BOT_APP_PASSWORD }}
           azd env set microsoftAppTenantId ${{ secrets.AZURE_TENANT_ID }}
       
+      - name: Validate Azure RBAC permissions
+        run: |
+          echo "Validating RBAC permissions for the authenticated service principal..."
+          
+          # Get the current logged-in service principal
+          SP_ID=$(az account show --query user.name --output tsv)
+          echo "Authenticated as service principal: $SP_ID"
+          
+          # Test if we can list resource groups (requires at least Reader role at subscription level)
+          echo "Testing resource group read permissions..."
+          if az group list --output none; then
+            echo "✓ Successfully validated resource group read permissions"
+          else
+            echo "::error::Failed to list resource groups. The service principal may lack read permissions."
+            echo "::error::Required: Reader role at subscription level or Contributor role at resource group level"
+            exit 1
+          fi
+          
+          # Try to check if the target resource group exists
+          RG_NAME="rg-systempromptbot-staging"
+          echo "Checking if resource group '$RG_NAME' exists..."
+          if az group show --name $RG_NAME --output none 2>/dev/null; then
+            echo "✓ Resource group '$RG_NAME' already exists"
+            
+            # Verify we can read the resource group properties
+            if az group show --name $RG_NAME --query id --output tsv > /dev/null; then
+              echo "✓ Successfully validated read access to resource group '$RG_NAME'"
+            else
+              echo "::warning::Resource group exists but may have limited read permissions"
+            fi
+          else
+            echo "Resource group '$RG_NAME' does not exist yet (will be created during provision)"
+            
+            # Verify we have permissions to create resource groups
+            echo "Validating resource group creation permissions..."
+            # We can't directly test "create RG" permission without creating one,
+            # but we can check if we have Contributor role assignments
+            ROLE_ASSIGNMENTS=$(az role assignment list --assignee $SP_ID --query "[?roleDefinitionName=='Contributor' || roleDefinitionName=='Owner'].{role:roleDefinitionName,scope:scope}" --output json)
+            
+            if [ "$(echo $ROLE_ASSIGNMENTS | jq '. | length')" -gt 0 ]; then
+              echo "✓ Found Contributor/Owner role assignments:"
+              echo "$ROLE_ASSIGNMENTS" | jq -r '.[] | "  - \(.role) at \(.scope)"'
+            else
+              echo "::warning::No Contributor or Owner role assignments found for this service principal"
+              echo "::warning::The service principal may not have permissions to create the resource group"
+              echo "::warning::If provisioning fails, ensure the service principal has Contributor role"
+              echo "::warning::See docs/staging-setup.md for RBAC setup instructions"
+            fi
+          fi
+          
+          echo ""
+          echo "RBAC validation complete. Proceeding with provisioning..."
+      
       - name: Provision infrastructure
         run: azd provision --no-prompt
       

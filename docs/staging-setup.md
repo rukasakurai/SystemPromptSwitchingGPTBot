@@ -82,37 +82,90 @@ gh secret set BOT_APP_ID --env Staging --body "<bot-app-id>"
 gh secret set BOT_APP_PASSWORD --env Staging --body "<bot-app-password>"
 ```
 
-### Step 5: Grant RBAC Permissions
+### Step 5: Grant RBAC Permissions (CRITICAL)
 
-The staging OIDC service principal needs permissions to create and manage Azure resources:
+**This is the most common cause of deployment failures.** The staging OIDC service principal needs permissions to create and manage Azure resources.
+
+#### Required Permissions
+
+The service principal must have **Contributor** role assigned at either:
+- **Subscription level** (simpler, broader permissions), OR
+- **Resource group level** (more restrictive, but requires pre-creating the resource group)
+
+#### Option A: Subscription-Level Contributor (Recommended for Initial Setup)
+
+This allows the service principal to create resource groups and manage all resources within the subscription:
 
 ```bash
 # Get the service principal object ID
+export CLIENT_ID="<your-oidc-client-id>"  # Same as AZURE_CLIENT_ID secret
+export AZURE_SUBSCRIPTION_ID="<your-subscription-id>"
 export SP_OBJECT_ID=$(az ad sp show --id $CLIENT_ID --query id --output tsv)
 
-# Assign Contributor role to the subscription or specific resource group
+# Assign Contributor role at subscription level
 az role assignment create \
   --role Contributor \
   --assignee-object-id $SP_OBJECT_ID \
   --assignee-principal-type ServicePrincipal \
   --scope /subscriptions/$AZURE_SUBSCRIPTION_ID
+
+# Verify the role assignment
+az role assignment list \
+  --assignee $SP_OBJECT_ID \
+  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID \
+  --query "[].{Role:roleDefinitionName,Scope:scope}" \
+  --output table
 ```
 
-If you prefer to scope to a specific resource group (recommended):
+#### Option B: Resource Group-Level Contributor (More Restrictive)
+
+If you prefer to limit permissions to a specific resource group:
 
 ```bash
-# The staging workflow uses resource group "rg-systempromptbot-staging" (configured via AZURE_RESOURCE_GROUP in the workflow)
-# The resource group name includes the project identifier for clarity in multi-project Azure subscriptions
-# azd will create this resource group automatically during first provisioning if it doesn't exist
-# Pre-creating the resource group is optional but recommended for testing RBAC setup
-az group create --name rg-systempromptbot-staging --location japaneast
+# Pre-create the resource group (required for resource-group-level RBAC)
+export RG_NAME="rg-systempromptbot-staging"
+export LOCATION="japaneast"
 
+az group create --name $RG_NAME --location $LOCATION
+
+# Assign Contributor role at resource group level
 az role assignment create \
   --role Contributor \
   --assignee-object-id $SP_OBJECT_ID \
   --assignee-principal-type ServicePrincipal \
-  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/rg-systempromptbot-staging
+  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$RG_NAME
+
+# Verify the role assignment
+az role assignment list \
+  --assignee $SP_OBJECT_ID \
+  --scope /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$RG_NAME \
+  --query "[].{Role:roleDefinitionName,Scope:scope}" \
+  --output table
 ```
+
+#### Verifying Permissions
+
+After assigning the role, verify that the service principal can access the subscription:
+
+```bash
+# Test authentication and permissions using the same OIDC method as CI
+# This requires setting up federated credentials locally (advanced)
+# Alternatively, test with the Azure Portal:
+# 1. Go to Subscriptions → <your-subscription> → Access control (IAM) → Role assignments
+# 2. Search for the service principal by its Object ID or Client ID
+# 3. Verify "Contributor" role is assigned
+
+# From CLI, verify the service principal exists and check its permissions
+az ad sp show --id $CLIENT_ID --query "{DisplayName:displayName,ObjectId:id,AppId:appId}" --output table
+
+echo "Checking role assignments for service principal..."
+az role assignment list --assignee $SP_OBJECT_ID --all --output table
+```
+
+**Common Issues:**
+- ❌ **403 Forbidden during provision**: Service principal lacks Contributor role
+- ❌ **"ERROR CODE UNAVAILABLE"**: Often indicates RBAC permissions missing
+- ❌ Role assignment exists but still fails: Allow 5-10 minutes for RBAC propagation after assignment
 
 ## How It Works
 
@@ -156,30 +209,72 @@ After successful deployment:
 
 ## Troubleshooting
 
+### 403 Forbidden Error During Provision (MOST COMMON)
+
+**Symptom**: Workflow fails at "Provision infrastructure" step with:
+```
+ERROR: initializing provisioning manager: checking if resource group exists: checking resource existence by id: HEAD https://management.azure.com/subscriptions/***/resourceGroups/rg-systempromptbot-staging
+RESPONSE 403: 403 Forbidden
+ERROR CODE UNAVAILABLE
+```
+
+**Root Cause**: The OIDC service principal lacks RBAC permissions to read or create the resource group.
+
+**Solution**:
+1. Verify the service principal has Contributor role assigned (see Step 5 above)
+2. Check the role assignment:
+   ```bash
+   export CLIENT_ID="<your-oidc-client-id>"
+   export SP_OBJECT_ID=$(az ad sp show --id $CLIENT_ID --query id --output tsv)
+   
+   # List all role assignments for this service principal
+   az role assignment list --assignee $SP_OBJECT_ID --all --output table
+   ```
+3. If no Contributor role is found, assign it:
+   ```bash
+   # Subscription-level (recommended)
+   az role assignment create \
+     --role Contributor \
+     --assignee-object-id $SP_OBJECT_ID \
+     --assignee-principal-type ServicePrincipal \
+     --scope /subscriptions/$AZURE_SUBSCRIPTION_ID
+   ```
+4. Wait 5-10 minutes for RBAC propagation, then re-run the workflow
+5. The new "Validate Azure RBAC permissions" step in the workflow will help diagnose this issue
+
 ### Workflow fails with authentication error
 - Verify OIDC federated credential is configured for the `Staging` GitHub Environment (subject includes `environment:Staging`)
-- Check that all GitHub secrets are set correctly
-- Ensure service principal has Contributor role
+- Check that all GitHub secrets are set correctly (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`)
+- Ensure the OIDC app registration (service principal) exists and hasn't been deleted
+- Verify the federated credential hasn't been accidentally removed
 
 ### Bot identity errors during provision
-- Verify `BOT_APP_ID` and `BOT_APP_PASSWORD` secrets are set in the Staging environment
+- Verify `BOT_APP_ID` and `BOT_APP_PASSWORD` secrets are set in the Staging environment (not repository-level)
 - Ensure the bot identity still exists in Entra ID (not deleted)
-- Check that client secret has not expired
+- Check that client secret has not expired (check expiration in Azure Portal → App registrations)
 
 ### Resource group or resources not found
-- First run will create the resource group automatically
+- First run will create the resource group automatically (requires Contributor role)
 - Ensure service principal has permissions to create resource groups
 - Check Azure subscription quota limits
+- Verify the `AZURE_RESOURCE_GROUP` environment variable is set correctly in the workflow
 
-### azd provision fails
+### azd provision fails with other errors
 - Review workflow logs for specific error messages
-- Verify Bicep files are valid (bicep-validation.yml should pass)
-- Check that all required parameters are provided
+- Verify Bicep files are valid (bicep-validation.yml workflow should pass)
+- Check that all required parameters are provided in the "Configure azd environment" step
+- Ensure Azure OpenAI is available in the target location (`japaneast`)
 
 ### "no default response for prompt 'Pick a resource group to use'"
 - This error occurs when `AZURE_RESOURCE_GROUP` is not set in the azd environment
 - The workflow now sets this automatically to `rg-systempromptbot-staging`
 - If using a custom resource group name, update the `azd env set AZURE_RESOURCE_GROUP` line in the workflow
+
+### RBAC changes not taking effect
+- Allow 5-10 minutes for RBAC propagation after making role assignments
+- Clear any cached credentials: `az account clear` (locally)
+- In GitHub Actions, OIDC tokens are fresh each run, so no cache clearing needed
+- Verify the role assignment is at the correct scope (subscription or resource group)
 
 ## Maintenance
 
