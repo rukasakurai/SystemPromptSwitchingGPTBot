@@ -113,12 +113,18 @@ The `azd coding-agent config` command creates a branch and pull request containi
 
 ### 6. Verify Configuration
 
-The configuration creates a GitHub environment (typically named `copilot`) with three variables:
+The configuration creates a GitHub environment (typically named `copilot`) and sets up three credentials that **must be stored as secrets** (not variables) in your repository:
 - `AZURE_CLIENT_ID` - Managed identity client ID
 - `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
 - `AZURE_TENANT_ID` - Azure tenant ID
 
-Verify these are set correctly in your repository's environment settings.
+**Important**: Even though OIDC federated credentials don't require client secrets, Microsoft and GitHub documentation recommend storing these IDs as secrets for security best practices. This ensures they are encrypted at rest and only exposed at runtime to authorized workflows.
+
+These can be configured as either:
+- **Repository secrets** (Settings → Secrets and variables → Actions → Repository secrets), or
+- **Environment secrets** (Settings → Environments → copilot → Environment secrets)
+
+The workflow uses `secrets.AZURE_CLIENT_ID`, `secrets.AZURE_TENANT_ID`, and `secrets.AZURE_SUBSCRIPTION_ID` to reference these values.
 
 ## Security Model
 
@@ -156,7 +162,7 @@ Ensure you have:
 - Permissions to create managed identities and resource groups
 
 ### GitHub environment not created
-Manually create the `copilot` environment in GitHub repository settings and add the three required variables from the azd output.
+Manually create the `copilot` environment in GitHub repository settings and add the three required credentials as secrets from the azd output: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`. These should be added as environment secrets or repository secrets.
 
 ## References
 
