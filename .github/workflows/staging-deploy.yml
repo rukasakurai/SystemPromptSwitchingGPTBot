@@ -100,11 +100,12 @@ jobs:
         run: |
           # Pre-create the resource group to avoid azd provision interactive prompt
           # azd provision --no-prompt requires the resource group to exist beforehand
+          RESOURCE_GROUP="rg-systempromptbot-staging"
           az group create \
-            --name rg-systempromptbot-staging \
+            --name "$RESOURCE_GROUP" \
             --location japaneast \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            || echo "Resource group already exists, continuing..."
+            || echo "Command failed (resource group may already exist), continuing..."
       
       - name: Provision infrastructure
         run: azd provision --no-prompt
