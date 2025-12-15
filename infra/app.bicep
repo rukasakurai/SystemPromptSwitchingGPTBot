@@ -84,6 +84,32 @@ resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+// Enable Log Streaming for the Web App
+// This allows viewing application logs via Azure Portal's Log Stream
+resource logs 'Microsoft.Web/sites/config@2025-03-01' = {
+  parent: webApp
+  name: 'logs'
+  properties: {
+    applicationLogs: {
+      fileSystem: {
+        level: 'Information'
+      }
+    }
+    httpLogs: {
+      fileSystem: {
+        retentionInMb: 35
+        enabled: true
+      }
+    }
+    detailedErrorMessages: {
+      enabled: true
+    }
+    failedRequestsTracing: {
+      enabled: true
+    }
+  }
+}
+
 // Role Assignment for Managed Identity to access Azure OpenAI
 resource openAiRoleUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(openAiService.id, webApp.id, '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
