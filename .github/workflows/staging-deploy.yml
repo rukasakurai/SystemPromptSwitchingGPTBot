@@ -96,6 +96,17 @@ jobs:
           azd env set microsoftAppPassword ${{ secrets.BOT_APP_PASSWORD }}
           azd env set microsoftAppTenantId ${{ secrets.AZURE_TENANT_ID }}
       
+      - name: Pre-create resource group
+        run: |
+          # Pre-create the resource group to avoid azd provision interactive prompt
+          # azd provision --no-prompt requires the resource group to exist beforehand
+          RESOURCE_GROUP="rg-systempromptbot-staging"
+          az group create \
+            --name "$RESOURCE_GROUP" \
+            --location japaneast \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
+            || echo "Command failed (resource group may already exist), continuing..."
+      
       - name: Provision infrastructure
         run: azd provision --no-prompt
       
