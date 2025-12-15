@@ -86,6 +86,12 @@ gh secret set BOT_APP_PASSWORD --env Staging --body "<bot-app-password>"
 
 **This is the most common cause of deployment failures.** The staging OIDC service principal needs permissions to create and manage Azure resources.
 
+> **TIP**: Use the validation script to check your RBAC setup:
+> ```bash
+> bash docs/validate-staging-rbac.sh
+> ```
+> This script will verify your service principal exists, has the correct role assignments, and can access the subscription.
+
 #### Required Permissions
 
 The service principal must have **Contributor** role assigned at either:
@@ -178,9 +184,25 @@ Once configured, the staging deployment workflow (`.github/workflows/staging-dep
 5. **Deploy** application code via `azd deploy` (builds and deploys to App Service)
 6. **Output** deployment information for verification
 
+## Validating the Setup
+
+Before triggering the workflow, validate your configuration locally:
+
+```bash
+# Run the RBAC validation script
+bash docs/validate-staging-rbac.sh
+```
+
+This script will:
+- Verify the service principal exists
+- Check role assignments (Contributor/Owner role)
+- Validate federated credentials for the Staging environment
+- Confirm the resource group status
+- Provide actionable guidance if issues are found
+
 ## Testing the Workflow
 
-You can manually trigger the workflow to test:
+After validation passes, you can manually trigger the workflow to test:
 
 1. Go to Actions tab in your repository
 2. Select "Staging - Deploy with azd" workflow
