@@ -75,37 +75,26 @@ After migration:
 ## Key Principles
 
 ### Minimal Changes
-- ONLY change the `kind` property from `'OpenAI'` to `'AIServices'`
-- Do NOT modify other working properties unless necessary
-- Preserve all existing endpoints, deployments, and configurations
+- Primarily focus on changing the `kind` property from `'OpenAI'` to `'AIServices'`
+- Modify other properties only when necessary for the migration to work
+- Attempt to preserve existing endpoints, deployments, and configurations where possible
 - Keep the same resource naming conventions
 
 ### API Compatibility
-- Microsoft Foundry is backward compatible with Azure OpenAI APIs
-- Existing OpenAI model deployments continue to work
-- No application code changes required (same endpoints and authentication)
-- Managed identity and RBAC continue to work as before
+- Microsoft Foundry (AIServices) aims to be compatible with Azure OpenAI APIs, but verify compatibility for your specific use case
+- Some model deployments may need to be updated or redeployed
+- Minimal application code changes expected, but test thoroughly to verify endpoints and authentication work correctly
+- Managed identity and RBAC should continue to work, but verify after migration
 
 ### Validation Requirements
 - Infrastructure must validate: `az deployment group validate` or Bicep validation
-- Ensure all parameters are preserved in main.bicep and main.parameters.json
-- Verify no breaking changes to dependent resources
-
-## Migration Benefits
-After migration to Foundry, the resource gains access to:
-- Multi-provider model catalog (Meta Llama, Mistral, Cohere, xAI, Microsoft)
-- Advanced agent orchestration capabilities
-- Enhanced evaluation and monitoring tools
-- Hybrid deployment options (cloud and on-premises)
-- Unified API for multiple model providers
+- Attempt to preserve parameters in main.bicep and main.parameters.json where possible
+- Check for breaking changes to dependent resources and address them as needed
 
 ## Constraints
 - Follow repository conventions in the AGENTS.md file
 - Use latest stable API versions (avoid preview versions)
-- Maintain backward compatibility with existing deployments
-- Preserve all RBAC and identity configurations
-- Do NOT modify application code (C# files) - this is infrastructure-only migration
-- Do NOT add new features or capabilities - focus solely on the migration
+- Focus on the migration task - avoid adding unrelated features or capabilities
 
 ## Rollback
 If issues arise, rollback is straightforward:
@@ -119,9 +108,9 @@ If issues arise, rollback is straightforward:
 - [Microsoft Foundry Documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/)
 
 ## Expected Outcome
-After running this agent:
-- All `kind: 'OpenAI'` resources in the repository are updated to `kind: 'AIServices'`
-- Infrastructure validates successfully
-- No breaking changes to existing functionality
-- Clear documentation of what was changed
-- Ready to deploy with backward-compatible migration
+After working with this agent (may require multiple iterations):
+- `kind: 'OpenAI'` resources in the repository are migrated to `kind: 'AIServices'`
+- Infrastructure validates successfully with Bicep
+- Breaking changes are identified and addressed
+- Changes are documented for review
+- Solution is tested and ready for deployment
