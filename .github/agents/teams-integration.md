@@ -43,8 +43,8 @@ When working with this repository:
 ## Required Properties
 ```json
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.16",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.21/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.21",
   "id": "<Microsoft-App-ID>",
   "version": "1.0.0",
   "developer": { ... },
