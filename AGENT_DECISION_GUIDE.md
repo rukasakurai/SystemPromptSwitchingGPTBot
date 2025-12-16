@@ -482,3 +482,4 @@ This guide should be reviewed and updated when:
 - Feedback indicates confusion or gaps in guidance
 
 Last reviewed: 2025-12-16
+
