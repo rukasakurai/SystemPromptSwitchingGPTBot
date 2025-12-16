@@ -50,11 +50,13 @@ Each configuration should implement:
 ```csharp
 public interface IGptConfiguration
 {
-    string SystemPrompt { get; }
+    string Id { get; }
+    string Command { get; }
     string DisplayName { get; }
+    string Description { get; }
+    string SystemPrompt { get; }
     float Temperature { get; }
     int MaxTokens { get; }
-    // Additional parameters as needed
 }
 ```
 
