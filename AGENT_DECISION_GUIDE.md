@@ -2,6 +2,8 @@
 
 This guide helps you choose the appropriate identity pattern for your Azure and Microsoft 365 integration scenarios. It provides clear decision criteria based on security, compliance, multi-tenancy, and operational requirements.
 
+> **Note:** This guide is maintained on the `copilot/create-markdown-decision-guide` branch.
+
 ## Overview: Identity Patterns in Azure
 
 When building applications that interact with Azure services, Microsoft Graph API, or Microsoft 365, you must choose the right identity pattern. This decision impacts security, scalability, compliance, and operational complexity.
