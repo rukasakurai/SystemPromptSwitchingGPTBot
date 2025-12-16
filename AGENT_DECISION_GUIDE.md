@@ -1,5 +1,7 @@
 # Agent ID and Agent 365 Decision Guide
 
+> **⚠️ PREVIEW DRAFT:** This guide is a first draft that has not been carefully reviewed, piloted, or used in production. It serves as an initial framework for evaluating Agent ID and Agent 365 adoption and should be validated and improved based on actual implementation experience.
+
 ## Purpose
 
 This guide helps determine whether this application should adopt:
