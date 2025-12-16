@@ -105,6 +105,10 @@ Teams を前提に開発していますが、Azure Bot を使用しているた�
 
 For a sequence diagram representing a typical user scenario of using this app, please refer to the [Sequence Diagram Documentation](docs/sequence-diagram.md).
 
+### Architecture Decision Guides
+
+For guidance on adopting Microsoft Entra Agent ID and Microsoft Agent 365, see [Agent Decision Guide](AGENT_DECISION_GUIDE.md).
+
 ## トラブルシューティング
 
 ### ボットが応答しない場合
