@@ -224,6 +224,8 @@ Agent 365 is a governance platform for AI agents in Microsoft 365 that provides:
 
 ## Implementation Checklist
 
+> **Note on Documentation:** Microsoft Entra Agent ID is in public preview (as of May 2025) and Microsoft Agent 365 is available through the Frontier program (as of November 2025). Official documentation links are current as of this guide's creation but may change as these services reach general availability. Verify the latest documentation at [Microsoft Learn](https://learn.microsoft.com/) if links become outdated.
+
 ### If Adopting Agent ID
 
 - [ ] Review [Agent ID documentation](https://learn.microsoft.com/en-us/entra/agent-id/identity-platform/what-is-agent-id)
@@ -239,7 +241,7 @@ Agent 365 is a governance platform for AI agents in Microsoft 365 that provides:
 ### If Adopting Agent 365
 
 - [ ] Verify Agent ID is implemented first (prerequisite)
-- [ ] Review [Agent 365 documentation](https://learn.microsoft.com/en-us/microsoft-agent-365/overview)
+- [ ] Review Agent 365 documentation (see [Microsoft 365 Agents overview](https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-registry) and [Agents Toolkit](https://learn.microsoft.com/en-us/microsoft-365/developer/overview-m365-agents-toolkit))
 - [ ] Register agent in Agent 365 registry
 - [ ] Configure usage policies and limits
 - [ ] Integrate with Microsoft Purview (if compliance required)
