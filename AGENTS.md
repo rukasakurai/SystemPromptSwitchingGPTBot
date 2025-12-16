@@ -144,7 +144,8 @@ This repository includes **custom AI agents** in `.github/agents/` that provide 
 - These agents are available through GitHub Copilot for domain-specific tasks
 - Each agent aligns with the guidelines in this AGENTS.md document
 - Prefer delegating domain-specific work to the relevant specialist
-## 7. Repository Maintenance Policy: Custom Instructions, Agents, and Prompts
+
+## 8. Repository Maintenance Policy: Custom Instructions, Agents, and Prompts
 
 ### Overview
 All contributors (human and AI agents) working on GitHub Issues or Pull Requests **MUST** reflect on whether their work requires updates to:
