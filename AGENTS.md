@@ -127,6 +127,15 @@ This document establishes the contract between this repository and AI agents. It
 - **Agents are encouraged to suggest improvements to AGENTS.md** to keep it accurate and useful
 - If adding docs, ensure they follow the CLI/code-first principle where possible
 
+### README.md Editing Policy
+- **Do NOT edit README.md** to add links to new documentation files
+- **Only edit README.md when**:
+  - Correcting factually incorrect information
+  - Fixing broken links or outdated instructions
+  - Updating existing sections that have become inaccurate
+- If you create new documentation, do NOT add it to README.md unless explicitly requested
+- README.md is intentionally kept stable and minimal - new documentation should be discoverable through the repository structure, not through README links
+
 ## 7. Domain Specialist Agents
 
 This repository includes **custom AI agents** in `.github/agents/` that provide specialized expertise:
