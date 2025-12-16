@@ -102,19 +102,23 @@ az role assignment create \
     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
-**Setup via Bicep:**
-```bicep
-resource appRegistration 'Microsoft.Graph/applications@v1.0' = {
-  // App Registration configuration
-}
+**Setup via Azure CLI:**
+```bash
+# Create App Registration
+az ad app create --display-name "MyApp" --sign-in-audience "AzureADMyOrg"
 
-resource federatedCredential 'Microsoft.Graph/applications/federatedIdentityCredentials@v1.0' = {
-  name: 'github-actions'
-  issuer: 'https://token.actions.githubusercontent.com'
-  subject: 'repo:org/repo:environment:prod'
-  audiences: ['api://AzureADTokenExchange']
-}
+# Create federated credential for GitHub Actions
+az ad app federated-credential create \
+  --id <app-object-id> \
+  --parameters '{
+    "name": "github-actions-federated-credential",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:org/repo:environment:prod",
+    "audiences": ["api://AzureADTokenExchange"]
+  }'
 ```
+
+**Note:** App Registrations and federated credentials cannot be managed directly in Bicep. Use Azure CLI, PowerShell, or Terraform with the AzureAD provider.
 
 ### When to Use User Identity
 
