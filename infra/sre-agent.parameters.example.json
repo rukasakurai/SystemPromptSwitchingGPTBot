@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceGroupName": {
+      "value": "rg-sre-agents"
+    },
+    "agentName": {
+      "value": "sre-production"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "monitoredResourceGroupNames": {
+      "value": [
+        "rg-app-production"
+      ]
+    },
+    "permissionLevel": {
+      "value": "Reader"
+    },
+    "tags": {
+      "value": {
+        "Environment": "Production",
+        "Purpose": "SRE Monitoring"
+      }
+    }
+  }
+}
