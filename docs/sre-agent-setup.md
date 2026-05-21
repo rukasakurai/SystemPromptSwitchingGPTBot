@@ -116,22 +116,15 @@ For common issues, the agent can:
 
 ## Integration with GitHub Issues
 
-To connect the SRE Agent with GitHub for automated issue creation:
+To let the SRE Agent read and act on this repository (analyze source, create issues, comment on PRs, trigger workflows), add the **GitHub connector**:
 
-1. **Create GitHub App** (one-time setup):
-   - Settings → Developer settings → GitHub Apps → New
-   - Grant permissions: Issues (read/write), Repository contents (read)
-   - Generate and save private key
+1. Open the agent at [sre.azure.com](https://sre.azure.com) → **Builder** → **Knowledge base** → **Add repository**
+2. Choose **GitHub** and authenticate:
+   - **OAuth** (recommended for interactive use; tokens refresh automatically)
+   - **Personal Access Token** with `repo` scope (use for CLI / headless setups)
+3. Select this repository (or paste its URL)
 
-2. **Configure SRE Agent Integration**:
-   - In Azure Portal → SRE Agent → Settings → Integrations
-   - Add GitHub integration
-   - Provide GitHub App ID and private key (store in Key Vault)
-   - Select repositories to create issues in
-
-3. **Automation Rules**:
-   - Configure thresholds: "Create issue if error rate > 50/min for 5 min"
-   - Define issue templates with agent-generated diagnostics
+The agent can then create / update / comment on issues and PRs and trigger GitHub Actions workflows as part of its investigation and remediation flow. See [GitHub connector in Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/github-connector) for details.
 
 ## Permissions and RBAC
 
@@ -183,15 +176,17 @@ If deployment fails, verify region support:
 
 ## Cost Considerations
 
-Azure SRE Agent billing:
-- **Agent Units (AAUs)**: Pay-as-you-go based on monitored resources and query volume
-- **Approximate**: $50-200/month for small-medium deployments
-- **Free Tier**: Not available
+Azure SRE Agent is billed in **Azure Agent Units (AAUs)** at $0.10 per AAU:
 
-To minimize costs:
+- **Always-on flow (fixed)**: 4 AAUs/hour per agent — billed continuously, regardless of activity. That is **~$288/month per agent** ($0.10 × 4 × 24 × 30) before any active usage.
+- **Active flow (usage-based)**: additional AAUs consumed per million tokens processed by the underlying model when the agent is investigating or acting. Rate varies by model.
+
+You can set a monthly AAU allocation/cap to control costs. See [Pricing and billing for Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/pricing-billing) for current rates and per-model AAU costs.
+
+To minimize cost:
 - Limit monitored resource groups to critical services only
-- Configure alert thresholds to reduce noise
-- Review agent usage metrics monthly
+- Set an AAU cap appropriate for the environment
+- Review agent usage metrics regularly
 
 ## References
 
