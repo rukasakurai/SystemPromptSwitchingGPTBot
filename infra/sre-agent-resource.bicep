@@ -10,27 +10,18 @@ param location string
 @description('Tags to apply to the SRE Agent resource')
 param tags object = {}
 
-// SRE Agent resource
-// Note: properties schema is not fully documented. This is a minimal valid template.
-// WARNING: Empty properties may cause deployment failures. 
-// If deployment fails, use Azure Portal to create the agent and export the JSON configuration.
-resource sreAgent 'Microsoft.App/agents@2025-05-01-preview' = {
+// SRE Agent resource (Microsoft.App/agents, stable API as of GA in March 2026).
+// The `properties` block here is intentionally minimal. Extend it per your scenario;
+// see https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents for the
+// current schema (e.g. monitored resource scope, permission level, connectors).
+resource sreAgent 'Microsoft.App/agents@2026-01-01' = {
   name: agentName
   location: location
   identity: {
     type: 'SystemAssigned'
   }
   tags: tags
-  properties: {
-    // Properties are not fully documented in preview API
-    // Expected fields based on community samples and Azure Portal behavior:
-    // - resourceGroups: array of resource group IDs to monitor
-    // - permissionLevel: 'Reader' or 'Privileged'
-    // Actual schema may differ - verify with Azure Portal JSON export
-    // 
-    // RECOMMENDATION: Deploy via Azure Portal first, then export JSON to understand
-    // the required properties schema for your environment
-  }
+  properties: {}
 }
 
 // Outputs

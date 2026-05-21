@@ -21,10 +21,10 @@ This repository already has the required observability infrastructure:
 
 ## Deployment Method
 
-**Current Status (December 2024)**: Azure SRE Agent is in **preview** with limited IaC support.
+**Current Status (May 2026)**: Azure SRE Agent reached **General Availability in March 2026**. A stable ARM API version (`2026-01-01`) is now published for `Microsoft.App/agents`.
 
-- **Recommended**: Azure Portal deployment (stable, fully documented)
-- **Experimental**: Bicep deployment (preview API, schema incomplete)
+- **Recommended**: Azure Portal deployment (most fully documented end-to-end flow)
+- **Supported**: Bicep deployment using the stable `2026-01-01` API
 
 ### Option 1: Azure Portal Deployment (Recommended)
 
@@ -35,7 +35,7 @@ This repository already has the required observability infrastructure:
    - **Subscription**: Your Azure subscription
    - **Resource Group**: Create new or use existing (e.g., `rg-sre-agents`)
    - **Agent Name**: `sre-{environmentName}` (e.g., `sre-production`)
-   - **Region**: `East US 2` or `Sweden Central` (limited availability)
+   - **Region**: `East US 2`, `Sweden Central`, `Australia East`, or `UK South` (limited availability)
 
 3. **Select Resources to Monitor**
    - Click "Choose resource groups"
@@ -54,14 +54,13 @@ This repository already has the required observability infrastructure:
    - Deployment takes 2-5 minutes
    - Managed Identity is automatically created and assigned to monitored resource groups
 
-### Option 2: Bicep Deployment (Experimental)
+### Option 2: Bicep Deployment
 
-Bicep templates (`infra/sre-agent*.bicep`) are provided as a **foundation** for when the API becomes stable.
+Bicep templates (`infra/sre-agent*.bicep`) deploy the agent using the stable `Microsoft.App/agents@2026-01-01` API.
 
 **⚠️ Limitations**:
-- API version `2025-05-01-preview` is subject to breaking changes
-- Full schema is not publicly documented
-- Child resources (data connectors) may require manual configuration
+- The `properties` schema currently shipped in this repo is minimal — verify against the [API reference](https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents) for fields your scenario requires
+- Child resources (data connectors, GitHub connector) are configured post-deployment via the [sre.azure.com](https://sre.azure.com) portal
 
 **Deployment**:
 ```bash
@@ -178,16 +177,16 @@ No additional configuration needed - the agent discovers these through resource 
 ### Region Limitations
 
 If deployment fails, verify region support:
-- **Supported**: East US 2, Sweden Central, Australia East (as of Dec 2024)
-- **Workaround**: Deploy agent in supported region; it can monitor resources in any region
-- **Note**: Check [Azure SRE Agent FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq) for latest region availability as this changes during preview
+- **Supported (as of May 2026)**: East US 2, Sweden Central, Australia East, UK South
+- **Workaround**: Deploy agent in a supported region; it can monitor resources in any region
+- **Note**: Check [Supported Regions for Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/supported-regions) for the current list
 
 ## Cost Considerations
 
 Azure SRE Agent billing:
 - **Agent Units (AAUs)**: Pay-as-you-go based on monitored resources and query volume
 - **Approximate**: $50-200/month for small-medium deployments
-- **Free Tier**: Not available during preview
+- **Free Tier**: Not available
 
 To minimize costs:
 - Limit monitored resource groups to critical services only
@@ -198,12 +197,16 @@ To minimize costs:
 
 - [Azure SRE Agent Documentation](https://learn.microsoft.com/en-us/azure/sre-agent/)
 - [Create and Use an Agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage)
-- [Agent Permissions](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity)
-- [FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq)
+- [Agent Permissions](https://learn.microsoft.com/en-us/azure/sre-agent/permissions)
+- [User Roles and Permissions](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles)
+- [Supported Regions](https://learn.microsoft.com/en-us/azure/sre-agent/supported-regions)
+- [Pricing and Billing](https://learn.microsoft.com/en-us/azure/sre-agent/pricing-billing)
+- [Microsoft.App/agents ARM/Bicep reference](https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents)
+- [Product portal](https://sre.azure.com)
 
 ## Next Steps
 
-1. Deploy SRE Agent via Azure Portal (recommended for preview)
+1. Deploy SRE Agent via Azure Portal (recommended)
 2. Configure monitoring for resource group containing Web App
 3. Test chat interface with recent error scenarios
 4. Set up GitHub integration for automated issue creation

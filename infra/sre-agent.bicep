@@ -1,11 +1,8 @@
 // Azure SRE Agent deployment module
-// 
-// ⚠️ PREVIEW STATUS: This module uses Microsoft.App/agents@2025-05-01-preview
-// The API is subject to breaking changes. Full schema is not yet publicly documented.
-// Recommended: Deploy via Azure Portal until API reaches GA.
 //
-// Purpose: Foundation template for future IaC-based SRE Agent deployments
-// When GA: Update to stable API version and complete property definitions
+// Uses the stable Microsoft.App/agents@2026-01-01 API (Azure SRE Agent GA'd March 2026).
+// Note: the `properties` block in sre-agent-resource.bicep is minimal — extend it to match
+// your scenario; see https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents
 //
 // USAGE: Deploy at subscription scope, not resource group scope
 // az deployment sub create --location eastus2 --template-file sre-agent.bicep --parameters ...
@@ -18,11 +15,12 @@ param resourceGroupName string
 @description('Name of the SRE Agent')
 param agentName string
 
-@description('Azure region for the SRE Agent (limited availability: eastus2, swedencentral, australiaeast)')
+@description('Azure region for the SRE Agent (limited availability: eastus2, swedencentral, australiaeast, uksouth)')
 @allowed([
   'eastus2'
   'swedencentral'
   'australiaeast'
+  'uksouth'
 ])
 param location string = 'eastus2'
 
