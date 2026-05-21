@@ -490,4 +490,5 @@ app/DeploymentTemplates/*
 # Bicep generated files
 infra/*.json
 !infra/main.parameters.json
+!infra/*.parameters.example.json
 

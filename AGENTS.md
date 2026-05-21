@@ -96,6 +96,15 @@ This document establishes the contract between this repository and AI agents. It
 - Web App should reference App Insights connection string in `infra/app.bicep`
 - Prefer provisioning observability tools via Bicep when possible
 
+### Azure SRE Agent for Automated Troubleshooting
+- **Purpose**: AI-powered reliability assistant for proactive issue detection and remediation
+- **Status**: Preview service with limited IaC support (as of December 2024)
+- **Deployment**: Currently recommended via Azure Portal (see `docs/sre-agent-setup.md`)
+- **IaC Foundation**: `infra/sre-agent.bicep` provided as template for future GA deployment
+- **Integration**: Automatically discovers Application Insights, Log Analytics, and Web App logs
+- **Permissions**: Uses managed identity with Reader/Monitoring Reader/Log Analytics Reader roles
+- **Best Practice**: Deploy after initial infrastructure is stable; useful for production monitoring
+
 ## 5. What AGENTS.md Cannot Solve (and Mitigations)
 
 ### Enforcement
