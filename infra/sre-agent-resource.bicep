@@ -10,10 +10,8 @@ param location string
 @description('Tags to apply to the SRE Agent resource')
 param tags object = {}
 
-// SRE Agent resource (Microsoft.App/agents, stable API as of GA in March 2026).
-// The `properties` block here is intentionally minimal. Extend it per your scenario;
-// see https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents for the
-// current schema (e.g. monitored resource scope, permission level, connectors).
+// SRE Agent resource. Extend `properties` per your scenario; see
+// https://learn.microsoft.com/en-us/azure/templates/microsoft.app/agents
 resource sreAgent 'Microsoft.App/agents@2026-01-01' = {
   name: agentName
   location: location

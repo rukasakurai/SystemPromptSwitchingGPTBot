@@ -37,8 +37,7 @@ param permissionLevel string = 'Reader'
 @description('Tags to apply to the SRE Agent resource')
 param tags object = {}
 
-// Resource group for the SRE Agent itself
-// Note: This resource group must be created before deploying this template
+// Resource group for the SRE Agent (must exist before deployment)
 // Example: az group create --name rg-sre-agents --location eastus2
 resource sreAgentRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   name: resourceGroupName

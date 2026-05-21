@@ -82,7 +82,20 @@ az deployment sub create \
 **Notes**: 
 - Deployment is at subscription scope to allow RBAC assignments across multiple resource groups
 - The resource group for the agent must exist before deployment
-- If deployment fails due to schema issues, use Azure Portal and export the configuration
+- The SRE Agent Bicep is **decoupled** from the main `azd` deployment (`infra/main.bicep` does not reference it) so it can be provisioned and deprovisioned independently of the application
+
+### Deprovision and Reprovision On-Demand
+
+The SRE Agent has a high always-on cost (~$288/month per agent). Because it lives in its own resource group and is not part of `azd up`, you can tear it down between experiments and bring it back when needed.
+
+**Deprovision**:
+```bash
+az group delete --name rg-sre-agents --yes --no-wait
+```
+
+Role assignments left behind in monitored RGs are harmless and will be replaced cleanly on reprovision.
+
+**Reprovision** — re-run the two-step deployment above, then reconfigure connectors and monitored scope at [sre.azure.com](https://sre.azure.com).
 
 ## Using the SRE Agent
 
@@ -119,9 +132,7 @@ For common issues, the agent can:
 To let the SRE Agent read and act on this repository (analyze source, create issues, comment on PRs, trigger workflows), add the **GitHub connector**:
 
 1. Open the agent at [sre.azure.com](https://sre.azure.com) → **Builder** → **Knowledge base** → **Add repository**
-2. Choose **GitHub** and authenticate:
-   - **OAuth** (recommended for interactive use; tokens refresh automatically)
-   - **Personal Access Token** with `repo` scope (use for CLI / headless setups)
+2. Choose **GitHub** and authenticate (OAuth recommended; PAT requires `repo` scope)
 3. Select this repository (or paste its URL)
 
 The agent can then create / update / comment on issues and PRs and trigger GitHub Actions workflows as part of its investigation and remediation flow. See [GitHub connector in Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/github-connector) for details.
@@ -172,21 +183,20 @@ No additional configuration needed - the agent discovers these through resource 
 If deployment fails, verify region support:
 - **Supported (as of May 2026)**: East US 2, Sweden Central, Australia East, UK South
 - **Workaround**: Deploy agent in a supported region; it can monitor resources in any region
-- **Note**: Check [Supported Regions for Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/supported-regions) for the current list
 
 ## Cost Considerations
 
-Azure SRE Agent is billed in **Azure Agent Units (AAUs)** at $0.10 per AAU:
+Azure SRE Agent is billed in **Azure Agent Units (AAUs)**:
 
-- **Always-on flow (fixed)**: 4 AAUs/hour per agent — billed continuously, regardless of activity. That is **~$288/month per agent** ($0.10 × 4 × 24 × 30) before any active usage.
-- **Active flow (usage-based)**: additional AAUs consumed per million tokens processed by the underlying model when the agent is investigating or acting. Rate varies by model.
+- **Always-on flow (fixed)**: 4 AAUs/hour per agent, billed continuously (~$288/month per agent before any usage)
+- **Active flow (usage-based)**: additional AAUs per million tokens processed during investigations and actions; rate varies by model
 
-You can set a monthly AAU allocation/cap to control costs. See [Pricing and billing for Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/pricing-billing) for current rates and per-model AAU costs.
+See [Pricing and billing for Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/pricing-billing).
 
 To minimize cost:
 - Limit monitored resource groups to critical services only
-- Set an AAU cap appropriate for the environment
-- Review agent usage metrics regularly
+- Set a monthly AAU cap
+- Deprovision the agent when not in use (see [Deprovision and Reprovision On-Demand](#deprovision-and-reprovision-on-demand))
 
 ## References
 
